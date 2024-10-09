@@ -1,11 +1,10 @@
-import random
-
+import matplotlib.pyplot as plt
+import numpy as np
 from prettytable import PrettyTable
-from unum.units import *
 from unum import Unum
-import matplotlib.pyplot as plot
+from unum.units import *
 
-from utils import get_column, get_columns, strip_measurement_units, get_median_and_error
+from utils import get_column, write_to_csv
 
 kV = Unum.unit('kV', 1000 * V)  # 1 kV = 1000 V
 
@@ -19,7 +18,7 @@ Scopul lucrarii:
 # Constants
 CONST_d1 = 2.13 * 10 ** -10 * m
 CONST_d2 = 1.23 * 10 ** -10 * m
-CONST_L = 13.5 * cm
+CONST_L = (13.5 * cm).asUnit(m)
 
 CONST_e = 1.602 * 10 ** -19 * C
 CONST_m = 9.109 * 10 ** -31 * kg
@@ -29,28 +28,28 @@ CONST_h = 6.625 * 10 ** -34 * J * s
 experimental_data = [
     {
         "U": 3 * kV,
-        "D1": 0 * cm,
-        "D2": 0 * cm,
+        "D1": 2.85 * cm,
+        "D2": 4.85 * cm,
     },
     {
         "U": 3.5 * kV,
-        "D1": 0 * cm,
-        "D2": 0 * cm,
+        "D1": 2.75 * cm,
+        "D2": 4.7 * cm,
     },
     {
         "U": 4 * kV,
-        "D1": 0 * cm,
-        "D2": 0 * cm,
+        "D1": 2.55 * cm,
+        "D2": 4.2 * cm,
     },
     {
         "U": 4.5 * kV,
-        "D1": 0 * cm,
-        "D2": 0 * cm,
+        "D1": 2.4 * cm,
+        "D2": 4 * cm,
     },
     {
         "U": 5 * kV,
-        "D1": 0 * cm,
-        "D2": 0 * cm,
+        "D1": 2.25 * cm,
+        "D2": 3.9 * cm,
     }
 ]
 
@@ -69,23 +68,15 @@ def compute_theoretical_wave_length(U_inverse_square_root: Unum) -> Unum:
     return (U_inverse_square_root * CONST_h / divider).asNumber() * m
 
 
-def compute_graphite_constants(D: Unum, U_inverse_square_root: Unum) -> Unum:
+def compute_graphite_constants(slope: float) -> Unum:
     divided = 2 * CONST_h * CONST_L
-    divider = D * (2 * CONST_m * CONST_e) ** (1 / 2)
-    return (U_inverse_square_root * divided / divider).asNumber() * m
+    divider = (2 * CONST_m * CONST_e) ** (1 / 2) * slope
+
+    return (divided / divider).asNumber() * m
 
 
 def main():
     table = PrettyTable()
-
-    number = 5
-
-    for data in experimental_data:
-        if data["D1"] == 0 * cm:
-            data["D1"] = number * cm
-        if data["D2"] == 0 * cm:
-            data["D2"] = (number + 1) * cm
-        number -= 1
 
     table.add_column("U (kV)", [entry["U"].asUnit(kV) for entry in experimental_data])
     table.add_column("1/U^1/2 (V^-1/2)", [computer_inverse_square_root(entry["U"]).asUnit(1 / V ** 0.5) for entry in experimental_data])
@@ -97,37 +88,30 @@ def main():
 
     table.add_column("λ teo (pm)", [compute_theoretical_wave_length(data).asUnit(pm) for data in get_column(table, "1/U^1/2 (V^-1/2)")])
 
-    print(get_columns(table, ["D1 (cm)", "1/U^1/2 (V^-1/2)"]))
-
-    table.add_column("d1 exp (pm)", [compute_graphite_constants(
-        entries[0], # maybe cast to meters
-        entries[1]
-    ) for entries in get_columns(table, ["D1 (cm)", "1/U^1/2 (V^-1/2)"])
-    ])
-
-    table.add_column("d2 exp (pm)", [compute_graphite_constants(
-        entries[0], # maybe cast to meters
-        entries[1]
-    ) for entries in get_columns(table, ["D2 (cm)", "1/U^1/2 (V^-1/2)"])
-    ])
-
-
-    D1_entries = [entry.asNumber() for entry in get_column(table, "D1 (cm)")]
-    D2_entries = [entry.asNumber() for entry in get_column(table, "D2 (cm)")]
     U_entries = [entry.asNumber() for entry in get_column(table, "1/U^1/2 (V^-1/2)")]
 
-    plot.plot(U_entries, D1_entries)
-    plot.plot(U_entries, D2_entries)
-    plot.ylabel("D1 and D2 in cm")
+    D1_entries = [entry.asUnit(m).asNumber() for entry in get_column(table, "D1 (cm)")]
+    D2_entries = [entry.asUnit(m).asNumber() for entry in get_column(table, "D2 (cm)")]
 
-    plot.xlabel("1/U^1/2 in V")
+    plt.scatter(U_entries, D1_entries)
+    plt.scatter(U_entries, D2_entries)
+    plt.ylabel("D1 and D2 in cm")
+    plt.xlabel("1/U^1/2 in 1/V^-1/2")
 
+    D1_slope, D1_intercept = np.polyfit(U_entries, D1_entries, 1)
+    D2_slope, D2_intercept = np.polyfit(U_entries, D2_entries, 1)
 
-    d1_exp_median, d1_exp_error_median = get_median_and_error(get_column(table, "d1 exp (pm)"))
-    d2_exp_median, d2_exp_error_median = get_median_and_error(get_column(table, "d2 exp (pm)"))
+    D1_pred = D1_slope * np.array(U_entries) + D1_intercept
+    plt.plot(U_entries, D1_pred, color="red", label=f"Linear Fit: y = {D1_slope:.2f}x + {D1_intercept:.2f}")
 
-    print(strip_measurement_units(table))
-    print(f"d1 exp = {d1_exp_median.asUnit(pm)} +- {d1_exp_error_median.asUnit(pm)}")
-    print(f"d2 exp = {d2_exp_median.asUnit(pm)} +- {d2_exp_error_median.asUnit(pm)}")
+    D2_pred = D2_slope * np.array(U_entries) + D2_intercept
+    plt.plot(U_entries, D2_pred, color="red", label=f"Linear Fit: y = {D2_slope:.2f}x + {D2_intercept:.2f}")
 
-    plot.show()
+    d1_exp = compute_graphite_constants(D1_slope)
+    d2_exp = compute_graphite_constants(D2_slope)
+
+    print(f"d1 exp = {d1_exp.asUnit(m)}")
+    print(f"d2 exp = {d2_exp.asUnit(m)}")
+
+    write_to_csv("output.csv", table)
+    plt.show()

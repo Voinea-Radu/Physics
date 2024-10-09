@@ -1,0 +1,3 @@
+prettytable~=3.11.0
+Unum~=4.2.1
+matplotlib~=3.9.2

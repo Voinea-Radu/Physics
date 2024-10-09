@@ -16,12 +16,14 @@ def get_columns(table: PrettyTable, labels: list[str]) -> list:
 
     return list(zip(*to_zip))
 
-def strip_measurement_units(table:PrettyTable):
+
+def strip_measurement_units(table: PrettyTable):
     for row in table._rows:
         for i in range(len(row)):
             if isinstance(row[i], Unum):
                 row[i] = row[i].asNumber()
     return table
+
 
 def unit_sum(data: list[Unum]) -> Unum:
     output = data[0]
@@ -31,8 +33,27 @@ def unit_sum(data: list[Unum]) -> Unum:
 
     return output
 
-def get_median_and_error(data: list[Unum]) -> tuple[Unum, Unum]:
+
+def get_median_and_error(data: list[Unum]) -> tuple[Unum, Unum, float]:
     d1_exp_median = unit_sum(data) / len(data)
     d1_exp_errors = [abs(entry - d1_exp_median) for entry in data]
     d1_exp_error_median = unit_sum(d1_exp_errors) / len(d1_exp_errors)
-    return d1_exp_median, d1_exp_error_median
+
+    error_percentage = (d1_exp_median + d1_exp_error_median) * 100 / d1_exp_median - 100
+
+    return d1_exp_median, d1_exp_error_median, error_percentage.asNumber()
+
+
+def write_to_csv(file_name, table: PrettyTable):
+    for row in table._rows:
+        for i in range(len(row)):
+            if isinstance(row[i], Unum):
+                row[i] = float(f"{row[i].asNumber():.2f}")
+            if isinstance(row[i], float):
+                row[i] = f"{row[i]:.2f}"
+
+    data = table.get_csv_string()
+
+    with open(file_name, "w", encoding="utf-8") as file:
+        for line in data.split("\n"):
+            file.write(f"{line}")
