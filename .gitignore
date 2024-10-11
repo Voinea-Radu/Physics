@@ -2,3 +2,4 @@ venv
 table.csv
 results.txt
 *.zip
+*.png

@@ -117,6 +117,7 @@ def main():
 
     write_to_csv(TABLE_FILE, table)
     plt.show()
+    plt.savefig("plot.png")
 
 
 if __name__ == "__main__":
