@@ -1,6 +1,9 @@
 from prettytable import PrettyTable
 from unum import Unum
+import os
+from unum.units import *
 
+kV = Unum.unit("kV", 1000 * V)  # 1 kV = 1000 V
 
 def get_column(table: PrettyTable, label: str) -> list:
     column_index = table.field_names.index(label)
@@ -44,7 +47,7 @@ def get_median_and_error(data: list[Unum]) -> tuple[Unum, Unum, float]:
     return d1_exp_median, d1_exp_error_median, error_percentage.asNumber()
 
 
-def write_to_csv(file_name, table: PrettyTable):
+def write_to_csv(file_name:str, table: PrettyTable):
     for row in table._rows:
         for i in range(len(row)):
             if isinstance(row[i], Unum):
@@ -57,3 +60,13 @@ def write_to_csv(file_name, table: PrettyTable):
     with open(file_name, "w", encoding="utf-8") as file:
         for line in data.split("\n"):
             file.write(f"{line}")
+
+
+def delete_file(file_name:str):
+    if os.path.exists(file_name):
+        os.remove(file_name)
+
+def append_to_file(file_name:str, data:str):
+    with open(file_name, "a", encoding="utf-8") as file:
+        file.write(data)
+        file.write("\n")
