@@ -4,6 +4,8 @@ import os
 from unum.units import *
 
 kV = Unum.unit("kV", 1000 * V)  # 1 kV = 1000 V
+mV = Unum.unit("mV", 0.001 * V)  # 1 mV = 0.001 V
+
 
 def get_column(table: PrettyTable, label: str) -> list:
     column_index = table.field_names.index(label)
@@ -37,17 +39,8 @@ def unit_sum(data: list[Unum]) -> Unum:
     return output
 
 
-def get_median_and_error(data: list[Unum]) -> tuple[Unum, Unum, float]:
-    d1_exp_median = unit_sum(data) / len(data)
-    d1_exp_errors = [abs(entry - d1_exp_median) for entry in data]
-    d1_exp_error_median = unit_sum(d1_exp_errors) / len(d1_exp_errors)
-
-    error_percentage = (d1_exp_median + d1_exp_error_median) * 100 / d1_exp_median - 100
-
-    return d1_exp_median, d1_exp_error_median, error_percentage.asNumber()
-
-
-def write_to_csv(file_name:str, table: PrettyTable):
+def write_to_csv(file_name: str, table: PrettyTable):
+    print(table)
     for row in table._rows:
         for i in range(len(row)):
             if isinstance(row[i], Unum):
@@ -62,11 +55,22 @@ def write_to_csv(file_name:str, table: PrettyTable):
             file.write(f"{line}")
 
 
-def delete_file(file_name:str):
+def delete_file(file_name: str):
     if os.path.exists(file_name):
         os.remove(file_name)
 
-def append_to_file(file_name:str, data:str):
+
+def append_to_file(file_name: str, data: str):
+    print(data)
     with open(file_name, "a", encoding="utf-8") as file:
         file.write(data)
         file.write("\n")
+
+
+class Median:
+    median: Unum
+    square_deviation: Unum
+
+    def __init__(self, data: list[Unum]):
+        self.median = unit_sum(data) / len(data)
+        self.square_deviation = (unit_sum([abs(entry - self.median) ** 2 for entry in data]) / len(data)) ** (1 / 2)

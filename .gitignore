@@ -1,5 +1,5 @@
 venv
-table.csv
+*.csv
 results.txt
 *.zip
 *.png
