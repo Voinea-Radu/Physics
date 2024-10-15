@@ -111,30 +111,14 @@ def main():
     HEISENBERG_DATA.compute(lambda_)
     write_to_csv(HEISENBERG_TABLE_FILE, HEISENBERG_DATA.create_table())
 
-
-    # plt.scatter(U_entries, D1_entries)
-    # plt.scatter(U_entries, D2_entries)
-    # plt.ylabel("D1 and D2 in cm")
-    # plt.xlabel("1/U^1/2 in 1/V^-1/2")
-    #
-    # D1_slope, D1_intercept = np.polyfit(U_entries, D1_entries, 1)
-    # D2_slope, D2_intercept = np.polyfit(U_entries, D2_entries, 1)
-    #
-    # D1_pred = D1_slope * np.array(U_entries) + D1_intercept
-    # plt.plot(U_entries, D1_pred, color="red", label=f"Linear Fit: y = {D1_slope:.2f}x + {D1_intercept:.2f}")
-    #
-    # D2_pred = D2_slope * np.array(U_entries) + D2_intercept
-    # plt.plot(U_entries, D2_pred, color="red", label=f"Linear Fit: y = {D2_slope:.2f}x + {D2_intercept:.2f}")
-    #
-    # d1_exp = compute_graphite_constants(D1_slope)
-    # d2_exp = compute_graphite_constants(D2_slope)
-    #
-    # append_to_file(RESULTS_FILE, f"d1 exp = {d1_exp.asUnit(m)}")
-    # append_to_file(RESULTS_FILE, f"d2 exp = {d2_exp.asUnit(m)}")
-    #
-    # write_to_csv(TABLE_FILE, table)
-    # plt.show()
-    # plt.savefig("plot.png")
+    append_to_file(RESULTS_FILE, f"Q: Este posibil, conform relatiei dE * dT >= h, ca daca obtinem intr-un experiment ca dt sa tinda spre zero, sa obtinem energie? Daca da, de unde? Este incalcat cumva principiul convervarii energiei?")
+    append_to_file(RESULTS_FILE, f"A: TODO")
+    append_to_file(RESULTS_FILE, f"Q: Un flux de particule trece prin fanta din fig.1 si cade pe un ecran E aflat la o distranta oarecare de fanta. Este oare posibil sa obtinem pe ecran, (prin ingustarea fantei), o pata de particule oricat de mica? Oferiti o explicatie in termenii relatiilor de nedeterminare ale lui Heisenberg.")
+    append_to_file(RESULTS_FILE, f"A: TODO")
+    append_to_file(RESULTS_FILE, f"Q: Ce aplicatii tehnice vedeti pentru relatiile 2a si dE * dt >= h?")
+    append_to_file(RESULTS_FILE, f"A: TODO")
+    append_to_file(RESULTS_FILE, f"Q: Ce expliucatii gasiti daca paramentru k_H se dovedeste a fi neunitar?")
+    append_to_file(RESULTS_FILE, f"A: TODO")
 
 
 if __name__ == "__main__":
