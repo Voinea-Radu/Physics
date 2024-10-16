@@ -101,84 +101,73 @@ def main():
     append_to_file(RESULTS_FILE, f"")
     append_to_file(RESULTS_FILE, f"Q: Care este diferenta dintre difractie si interferenta? Dar intre difractie si refractie?")
     append_to_file(RESULTS_FILE, """A: Difractia si interferenta sunt fenomene optice legate de comportamentul undelor luminoase. 
-Difractia apare atunci cand undele luminoase intalnesc un obstacol sau o fanta si se curbeaza in jurul acestuia, 
-ducand la raspandirea undelor in spatele obstacolului. Interferenta se refera la fenomenul de suprapunere a doua
-sau mai mult unde, rezultand zone de intensitate maxima si minima. Difractia este un proces in care undele sunt
-impastiate iar interefenta este rezultatul suprapunerii acestor unde. Difractia si reflectia sunt fenomene diferite
-Difractia implica curgerea si imprastierea undelor in jurul unui obstacol, in timp ce reflectia este procesul prin
-care lumina isi schimba directia atunci cand trece dintr-un mediu in altul, datorita schimbarii vitezei sale.
-""")
-    append_to_file(RESULTS_FILE, f"""Q: Ce influenta are difractia optica asupra imaginii vazupe pe suprafata unui CD sau DVD pe care cade lumina? 
-Ce se petrece cand inclinam suprafata lor sub unghiuri de incidenta diferite?""")
+    Difractia apare atunci cand undele luminoase intalnesc un obstacol sau o fanta si se curbeaza in jurul acestuia, 
+    ducand la raspandirea undelor in spatele obstacolului. Interferenta se refera la fenomenul de suprapunere a doua
+    sau mai mult unde, rezultand zone de intensitate maxima si minima. Difractia este un proces in care undele sunt
+    imprastiate iar interferenta este rezultatul suprapunerii acestor unde. Difractia si reflectia sunt fenomene diferite
+    Difractia implica curgerea si imprastierea undelor in jurul unui obstacol, in timp ce reflectia este procesul prin
+    care lumina isi schimba directia atunci cand trece dintr-un mediu in altul, datorita schimbarii vitezei sale.
+    """)
+    append_to_file(RESULTS_FILE, f"""Q: Ce influenta are difractia optica asupra imaginii vazute pe suprafata unui CD sau DVD pe care cade lumina? 
+    Ce se petrece cand inclinam suprafata lor sub unghiuri de incidenta diferite?""")
     append_to_file(RESULTS_FILE, f"""A: Difractia joaca un rol important in formarea modelelor de culoare pe suprafata CD-urilor si a DVD-urilor.
-Aceste discuri au microstructuri dispuse circular, care actioneaza ca o grila de difractie. Cand lumina cade pe ele,
-se imprastie si creeaza un spectru de culori vizibile. Atunci cand inclinam discul sub diferite unghiuri, schimbam 
-unghiul de incidenta al luminii, si implicit, unghiul la care sunt difractate diferitele lungimi de unda, 
-ceea ce schimba culorile si intensitatea acestora pe care le vedem pe disc
-""")
-
-    append_to_file(RESULTS_FILE, f"""Q: Cum influenteaza fenomenul de difractie, capacitatea unui intrument optic de a distringe doua puncte foarte
-apropiate dintr-o imagine?""")
-    append_to_file(RESULTS_FILE, f"""A: Difractia limineata rezolutia unui intrument optic. Atunci cnad lumina trece printr-o lentila sau o deschidere. 
-Daca doua puncte sunt foarte apropiate, modelele de difractie produse de acestea se suprapun, facand dificila 
-ditingerea clara a celor doua puncte. Capacitatea unui intrument optic de a rezolva doua puncte apropiate este 
-limitata de lungimea de unda a luminii si dimensiunea deschiderii
-""")
-
-    append_to_file(RESULTS_FILE, f"""Q: Lumina unui laser este proiectate pe un ecran circular de diamentru d. Cum influeneata difractia marimea
-imaginii obtinute pe un ecran aflat la o distanta oarecare de ecran?""")
-    append_to_file(RESULTS_FILE, f"""A: Difractia cauzeza o extindere a fasciculului lasr atunci cand aceasta trece print-o deschidere limitata. 
-In loc sa obtinem un punct luminos clar pe ecranul de proiectie, vedem un model de difractie format dintr-un 
-disc central luminos si inele concentrice mai slabe. Dimensiunea imaginii depinde de dimenasiunea deschiderii 
-si de lungimea de undea a luminii laserului, cu cat deschiderea este mai mica, cu atat modelul de difractie este mai larg.
-""")
-
+    Aceste discuri au microstructuri dispuse circular, care actioneaza ca o grila de difractie. Cand lumina cade pe ele,
+    se imprastie si creeaza un spectru de culori vizibile. Atunci cand inclinam discul sub diferite unghiuri, schimbam 
+    unghiul de incidenta al luminii, si implicit, unghiul la care sunt difractate diferitele lungimi de unda, 
+    ceea ce schimba culorile si intensitatea acestora pe care le vedem pe disc""")
+    append_to_file(RESULTS_FILE, f"""Q: Cum influenteaza fenomenul de difractie, capacitatea unui intrument optic de a distinge doua puncte foarte
+    apropiate dintr-o imagine?""")
+    append_to_file(RESULTS_FILE, f"""A: Difractia limiteaza rezolutia unui intrument optic. Atunci cand lumina trece printr-o lentila sau o deschidere. 
+    Daca doua puncte sunt foarte apropiate, modelele de difractie produse de acestea se suprapun, facand dificila 
+    distingerea clara a celor doua puncte. Capacitatea unui intrument optic de a rezolva doua puncte apropiate este 
+    limitata de lungimea de unda a luminii si dimensiunea deschiderii
+    """)
+    append_to_file(RESULTS_FILE, f"""Q: Lumina unui laser este proiectata pe un ecran circular de diamentru d. Cum influenteaza difractia marimea
+    imaginii obtinute pe un ecran aflat la o distanta oarecare de ecran?""")
+    append_to_file(RESULTS_FILE, f"""A: Difractia cauzeaza o extindere a fasciculului laser atunci cand aceasta trece printr-o deschidere limitata. 
+    In loc sa obtinem un punct luminos clar pe ecranul de proiectie, vedem un model de difractie format dintr-un 
+    disc central luminos si inele concentrice mai slabe. Dimensiunea imaginii depinde de dimensiunea deschiderii 
+    si de lungimea de unda a luminii laserului, cu cat deschiderea este mai mica, cu atat modelul de difractie este mai larg.
+    """)
     append_to_file(RESULTS_FILE, f"""Q: Ce se petrece cu imaginea de pe ecranul din fig.1.b, daca diamentru fasciculului laser, incident in centru
-fantei, este mai mic decat latimea fantei; dat daca este mai mare?""")
-    append_to_file(RESULTS_FILE, f"""A: Daca diamentrul fascilulului laser este mai mic decat latimea fantei, lumina va trece aproape neperturbata, 
-iar modelul de difractie va fi mai restrans. Daca diamentrul fasciculului laser este mai mare decat latimea 
-fantei, lumina va fi difractata mai intens si modelul de difractie va devenii mai larg. Astefel, marimea 
-fasciculului in raport cu fanta influeteaza cat de mult se raspandeste lumina pe ecran.
-""")
-
-    HEISENBERG_DATA.compute(lambda_)
-    write_to_csv(HEISENBERG_TABLE_FILE, HEISENBERG_DATA.create_table())
-
+    fantei, este mai mic decat latimea fantei; dat daca este mai mare?""")
+    append_to_file(RESULTS_FILE, f"""A: Daca diametrul fascilulului laser este mai mic decat latimea fantei, lumina va trece aproape neperturbata, 
+    iar modelul de difractie va fi mai restrans. Daca diametrul fasciculului laser este mai mare decat latimea 
+    fantei, lumina va fi difractata mai intens si modelul de difractie va devenii mai larg. Astfel, marimea 
+    fasciculului in raport cu fanta influenteaza cat de mult se raspandeste lumina pe ecran.
+    """)
     append_to_file(RESULTS_FILE, f"""Q: Este posibil, conform relatiei dE * dT >= h, ca daca obtinem intr-un experiment ca dt sa tinda spre zero, 
-sa obtinem energie? Daca da, de unde? Este incalcat cumva principiul convervarii energiei?""")
+    sa obtinem energie? Daca da, de unde? Este incalcat cumva principiul conservarii energiei?""")
     append_to_file(RESULTS_FILE, f"""A: Daca dt tinde spre zero, dE devine foarte mare, dar acest lucru nu inseamna ca energia poate fi creata din 
-nimic, ci ca exista flucruatii energetice pe perioade foarte scurte de timp. Aceste fluctuatii sunt posibile 
-confirm principiilor mecanicii cuantice si nu incalca principiul convervarii energiei deoarece energia medie 
-pe termen lung este constanta.
-""")
-
-    append_to_file(RESULTS_FILE, f"""Q: Un flux de particule trece prin fanta din fig.1 si cade pe un ecran E aflat la o distranta oarecare de fanta. 
-Este oare posibil sa obtinem pe ecran, (prin ingustarea fantei), o pata de particule oricat de mica? 
-Oferiti o explicatie in termenii relatiilor de nedeterminare ale lui Heisenberg.""")
-    append_to_file(RESULTS_FILE, f"""A: Nu, nu este posibil sa obtinem o pata de particule oricat de mica, prin ingurstarea fantei. Conform 
-principiului incertitudinii luni Heisenberg, daca ingustam fanta, determinam mai precis pozitia 
-particulelor, dar crestem incertitudinea impulsului lor. Aceasta crestere a incertitudinii impulsului 
-determina o raspandire mai mare a particulelor dupa trecerea prin fanta, ceea ce duce la o extindere a 
-pantei pe ecran. Acest efect este rezultatul direct al principiului incertitudinii, care sugereaza ca 
-nu putem masura simulatan pozitia si impulsul cu precizie infinita.
-""")
-
+    nimic, ci ca exista fluctuatii energetice pe perioade foarte scurte de timp. Aceste fluctuatii sunt posibile 
+    conform principiilor mecanicii cuantice si nu incalca principiul conservarii energiei deoarece energia medie 
+    pe termen lung este constanta.
+    """)
+    append_to_file(RESULTS_FILE, f"""Q: Un flux de particule trece prin fanta din fig.1 si cade pe un ecran E aflat la o distanta oarecare de fanta. 
+    Este oare posibil sa obtinem pe ecran, (prin ingustarea fantei), o pata de particule oricat de mica? 
+    Oferiti o explicatie in termenii relatiilor de nedeterminare ale lui Heisenberg.""")
+    append_to_file(RESULTS_FILE, f"""A: Nu, nu este posibil sa obtinem o pata de particule oricat de mica, prin ingustarea fantei. Conform 
+    principiului incertitudinii lui Heisenberg, daca ingustam fanta, determinam mai precis pozitia 
+    particulelor, dar crestem incertitudinea impulsului lor. Aceasta crestere a incertitudinii impulsului 
+    determina o raspandire mai mare a particulelor dupa trecerea prin fanta, ceea ce duce la o extindere a 
+    pantei pe ecran. Acest efect este rezultatul direct al principiului incertitudinii, care sugereaza ca 
+    nu putem masura simultan pozitia si impulsul cu precizie infinita.
+    """)
     append_to_file(RESULTS_FILE, f"""Q: Ce aplicatii tehnice vedeti pentru relatiile 2a si dE * dt >= h?""")
-    append_to_file(RESULTS_FILE, f"""A: Relatiile de incertitudine ale lui Heisenberg sunt fundamentale pentru tehnologiile cuntice, cum ar 
-fi microscoapele electronice si dispozitivele de imagistica, care se bazeaza pe principiile de 
-difractie si interfetrenta. De asemenea, ele sunt esentiale in functionarea ;aserelor cu dutata foarte 
-scurta, unde implsurile scurte de lumina permit sutdierea proceselor extrtem de rapide. Pricipiul 
-incertitudinii mai este aplicat si in criptografiea cuantica si computatia cuantica, unde fluctuatiile 
-energetice si interactiunile de scurta durata sunt utilizate pentru a controla infortiile la nivel cuantic. 
-""")
-
-    append_to_file(RESULTS_FILE, f"""Q: Ce expliucatii gasiti daca paramentru k_H se dovedeste a fi neunitar?""")
+    append_to_file(RESULTS_FILE, f"""A: Relatiile de incertitudine ale lui Heisenberg sunt fundamentale pentru tehnologiile cuantice, cum ar 
+    fi microscoapele electronice si dispozitivele de imagistica, care se bazeaza pe principiile de 
+    difractie si interferenta. De asemenea, ele sunt esentiale in functionarea laserelor cu durata foarte 
+    scurta, unde impulsurile scurte de lumina permit studierea proceselor extrem de rapide. Principiul 
+    incertitudinii mai este aplicat si in criptografia cuantica si computatia cuantica, unde fluctuatiile 
+    energetice si interactiunile de scurta durata sunt utilizate pentru a controla informatiile la nivel cuantic. 
+    """)
+    append_to_file(RESULTS_FILE, f"""Q: Ce explicatii gasiti daca paramentru k_H se dovedeste a fi neunitar?""")
     append_to_file(RESULTS_FILE, f"""A: Daca parametrul k_H se dovedeste a fi neunitar, acest lucru ar sugera ca exista o discrepanta in 
-masuratorile sau calculele efectuate. In context fizic, neunitatea unui astfel de parametru ar putea 
-indica existenta unor pirderi de energi, disipare sau interactiuni neintentionare cu mediul extern. 
-De asemenea, ar putea sugera necesitatea revizuirii teoriei sau a modelului matematic utilizat pentru 
-a descrie fenomentul, semnaland ca presupunerile initiale nu sunt pe deplin corecte sau ca exstia 
-facotri aditionali care trebuie luati in considerare.""")
+    masuratorile sau calculele efectuate. In context fizic, neunitatea unui astfel de parametru ar putea 
+    indica existenta unor pierderi de energie, disipare sau interactiuni neintentionate cu mediul extern. 
+    De asemenea, ar putea sugera necesitatea revizuirii teoriei sau a modelului matematic utilizat pentru 
+    a descrie fenomenul, semnaland ca presupunerile initiale nu sunt pe deplin corecte sau ca exista 
+    factori aditionali care trebuie luati in considerare.""")
 
 
 if __name__ == "__main__":
