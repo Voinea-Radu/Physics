@@ -11,20 +11,20 @@ def compute_lambda(x_mn: Unum, order: int) -> Unum:
 
 
 class MinimumIntensityData:
-    left_of_central_minimum_3: list[Unum]  # List of 3 measurements
-    left_of_central_minimum_2: list[Unum]  # List of 3 measurements
-    left_of_central_minimum_1: list[Unum]  # List of 3 measurements
-    right_of_central_minimum_1: list[Unum]  # List of 3 measurements
-    right_of_central_minimum_2: list[Unum]  # List of 3 measurements
-    right_of_central_minimum_3: list[Unum]  # List of 3 measurements
+    left_of_central_minimum_3: Unum # List of 3 measurements
+    left_of_central_minimum_2: Unum  # List of 3 measurements
+    left_of_central_minimum_1: Unum  # List of 3 measurements
+    right_of_central_minimum_1: Unum  # List of 3 measurements
+    right_of_central_minimum_2: Unum  # List of 3 measurements
+    right_of_central_minimum_3: Unum  # List of 3 measurements
 
     def __init__(self,
-                 left_of_central_minimum_3: list[Unum],
-                 left_of_central_minimum_2: list[Unum],
-                 left_of_central_minimum_1: list[Unum],
-                 right_of_central_minimum_1: list[Unum],
-                 right_of_central_minimum_2: list[Unum],
-                 right_of_central_minimum_3: list[Unum],
+                 left_of_central_minimum_3: Unum,
+                 left_of_central_minimum_2: Unum,
+                 left_of_central_minimum_1: Unum,
+                 right_of_central_minimum_1: Unum,
+                 right_of_central_minimum_2: Unum,
+                 right_of_central_minimum_3: Unum,
                  ):
         self.left_of_central_minimum_3 = left_of_central_minimum_3
         self.left_of_central_minimum_2 = left_of_central_minimum_2
@@ -41,18 +41,7 @@ class MinimumIntensityData:
             [
                 "Pozitie fata de MC",
                 "Ordin minim",
-                "Pozitie X Rigla", None, None,
-            ]
-        )
-
-        table.add_column(
-            "C1",
-            [
-                None,
-                None,
-                "Masuratoare 1",
-                "Masuratoare 2",
-                "Masuratoare 3",
+                "Pozitie X Rigla"
             ]
         )
 
@@ -61,7 +50,8 @@ class MinimumIntensityData:
             [
                 "Stanga MC",
                 "3",
-            ] + self.left_of_central_minimum_3
+                self.left_of_central_minimum_3
+            ]
         )
 
         table.add_column(
@@ -69,7 +59,8 @@ class MinimumIntensityData:
             [
                 "Stanga MC",
                 "2",
-            ] + self.left_of_central_minimum_2
+                self.left_of_central_minimum_2,
+            ]
         )
 
         table.add_column(
@@ -77,7 +68,8 @@ class MinimumIntensityData:
             [
                 "Stanga MC",
                 "1",
-            ] + self.left_of_central_minimum_1
+                self.left_of_central_minimum_1,
+            ]
         )
 
         table.add_column(
@@ -85,7 +77,8 @@ class MinimumIntensityData:
             [
                 "Dreapta MC",
                 "1",
-            ] + self.right_of_central_minimum_1
+                self.right_of_central_minimum_1,
+            ]
         )
 
         table.add_column(
@@ -93,7 +86,8 @@ class MinimumIntensityData:
             [
                 "Dreapta MC",
                 "2",
-            ] + self.right_of_central_minimum_2
+                self.right_of_central_minimum_2,
+            ]
         )
 
         table.add_column(
@@ -101,7 +95,8 @@ class MinimumIntensityData:
             [
                 "Dreapta MC",
                 "3",
-            ] + self.right_of_central_minimum_3
+                self.right_of_central_minimum_3,
+            ]
         )
 
         return table
