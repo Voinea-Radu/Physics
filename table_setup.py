@@ -19,19 +19,15 @@ class MinimumIntensityData:
     right_of_central_minimum_3: Unum  # List of 3 measurements
 
     def __init__(self,
-                 left_of_central_minimum_3: Unum,
-                 left_of_central_minimum_2: Unum,
-                 left_of_central_minimum_1: Unum,
-                 right_of_central_minimum_1: Unum,
-                 right_of_central_minimum_2: Unum,
-                 right_of_central_minimum_3: Unum,
+                 left: [Unum],
+                 right: [Unum],
                  ):
-        self.left_of_central_minimum_3 = left_of_central_minimum_3
-        self.left_of_central_minimum_2 = left_of_central_minimum_2
-        self.left_of_central_minimum_1 = left_of_central_minimum_1
-        self.right_of_central_minimum_1 = right_of_central_minimum_1
-        self.right_of_central_minimum_2 = right_of_central_minimum_2
-        self.right_of_central_minimum_3 = right_of_central_minimum_3
+        self.left_of_central_minimum_3 = left[0]
+        self.left_of_central_minimum_2 = left[1]
+        self.left_of_central_minimum_1 = left[2]
+        self.right_of_central_minimum_1 = right[0]
+        self.right_of_central_minimum_2 = right[1]
+        self.right_of_central_minimum_3 = right[2]
 
     def create_table(self) -> PrettyTable:
         table: PrettyTable = PrettyTable()
@@ -104,17 +100,17 @@ class MinimumIntensityData:
 
 class MinimumIntensityComputedData:
     class Order:
-        order_id: int  # List of 3 measurements
-        x_mn: list[Unum]  # List of 3 measurements
-        lambda_: list[Unum]  # List of 3 measurements
+        order_id: int
+        x_mn: Unum
+        lambda_: Unum
 
         def __init__(self,
-                     order_id: int,  # 1, 2, 3
-                     x_mn: list[Unum],
+                     order_id: int,
+                     x_mn: Unum,
                      ):
             self.order_id = order_id
             self.x_mn = x_mn
-            self.lambda_ = [compute_lambda(x_mn, order_id).asUnit(nm) for x_mn in x_mn]
+            self.lambda_ = compute_lambda(x_mn, order_id).asUnit(nm)
 
     order_1: Order
     order_2: Order
@@ -123,21 +119,18 @@ class MinimumIntensityComputedData:
     def compute_xmn(self, x_left: Unum, x_right: Unum) -> Unum:
         return abs((x_left + x_right) / 2)
 
-    def compute_xmn_list(self, x_left_list: list[Unum], x_right_list: list[Unum]) -> list[Unum]:
-        return [self.compute_xmn(x_left, x_right) for x_left, x_right in zip(x_left_list, x_right_list)]
-
     def __init__(self, data: MinimumIntensityData):
         self.order_1 = MinimumIntensityComputedData.Order(
             1,
-            x_mn=self.compute_xmn_list(data.left_of_central_minimum_1, data.right_of_central_minimum_1),
+            x_mn=self.compute_xmn(data.left_of_central_minimum_1, data.right_of_central_minimum_1),
         )
         self.order_2 = MinimumIntensityComputedData.Order(
             2,
-            x_mn=self.compute_xmn_list(data.left_of_central_minimum_2, data.right_of_central_minimum_2),
+            x_mn=self.compute_xmn(data.left_of_central_minimum_2, data.right_of_central_minimum_2),
         )
         self.order_3 = MinimumIntensityComputedData.Order(
             3,
-            x_mn=self.compute_xmn_list(data.left_of_central_minimum_3, data.right_of_central_minimum_3),
+            x_mn=self.compute_xmn(data.left_of_central_minimum_3, data.right_of_central_minimum_3),
         )
 
     def get_median(self) -> Median:
@@ -189,8 +182,8 @@ class MinimumIntensityComputedData:
 
 
 class MaximumIntensityData:
-    class Measurement:
-        class Slot:
+    class Slot:
+        class Measurement:
             maximum_x: Unum
             U_F: Unum
 
@@ -198,43 +191,40 @@ class MaximumIntensityData:
                 self.maximum_x = x
                 self.U_F = U_F
 
-        slot_A: Slot
-        slot_B: Slot
-        slot_C: Slot
+        left_of_central_maximum_3: Measurement
+        left_of_central_maximum_2: Measurement
+        left_of_central_maximum_1: Measurement
+        central_maximum: Measurement
+        right_of_central_maximum_1: Measurement
+        right_of_central_maximum_2: Measurement
+        right_of_central_maximum_3: Measurement
 
         def __init__(self,
-                     slot_A: Slot,
-                     slot_B: Slot,
-                     slot_C: Slot,
+                     left: list[Measurement],
+                     center: Measurement,
+                     right: list[Measurement],
                      ):
-            self.slot_A = slot_A
-            self.slot_B = slot_B
-            self.slot_C = slot_C
+            self.left_of_central_maximum_3 = left[0]
+            self.left_of_central_maximum_2 =  left[1]
+            self.left_of_central_maximum_1 =  left[2]
+            self.central_maximum = center
+            self.right_of_central_maximum_1 = right[0]
+            self.right_of_central_maximum_2 = right[1]
+            self.right_of_central_maximum_3 = right[2]
 
-    left_of_central_maximum_3: Measurement
-    left_of_central_maximum_2: Measurement
-    left_of_central_maximum_1: Measurement
-    central_maximum: Measurement
-    right_of_central_maximum_1: Measurement
-    right_of_central_maximum_2: Measurement
-    right_of_central_maximum_3: Measurement
+
+    slot_A: Slot
+    slot_B: Slot
+    slot_C: Slot
 
     def __init__(self,
-                 left_of_central_maximum_3: Measurement,
-                 left_of_central_maximum_2: Measurement,
-                 left_of_central_maximum_1: Measurement,
-                 central_maximum: Measurement,
-                 right_of_central_maximum_1: Measurement,
-                 right_of_central_maximum_2: Measurement,
-                 right_of_central_maximum_3: Measurement,
+                 slot_A: Slot,
+                 slot_B: Slot,
+                 slot_C: Slot,
                  ):
-        self.left_of_central_maximum_3 = left_of_central_maximum_3
-        self.left_of_central_maximum_2 = left_of_central_maximum_2
-        self.left_of_central_maximum_1 = left_of_central_maximum_1
-        self.central_maximum = central_maximum
-        self.right_of_central_maximum_1 = right_of_central_maximum_1
-        self.right_of_central_maximum_2 = right_of_central_maximum_2
-        self.right_of_central_maximum_3 = right_of_central_maximum_3
+        self.slot_A = slot_A
+        self.slot_B = slot_B
+        self.slot_C = slot_C
 
     def create_table(self) -> PrettyTable:
         table: PrettyTable = PrettyTable()
@@ -269,12 +259,12 @@ class MaximumIntensityData:
             [
                 "Stanga MC",
                 "3",
-                self.left_of_central_maximum_3.slot_A.maximum_x,
-                self.left_of_central_maximum_3.slot_A.U_F,
-                self.left_of_central_maximum_3.slot_B.maximum_x,
-                self.left_of_central_maximum_3.slot_B.U_F,
-                self.left_of_central_maximum_3.slot_C.maximum_x,
-                self.left_of_central_maximum_3.slot_C.U_F,
+                self.slot_A.left_of_central_maximum_3.maximum_x,
+                self.slot_A.left_of_central_maximum_3.U_F,
+                self.slot_B.left_of_central_maximum_3.maximum_x,
+                self.slot_B.left_of_central_maximum_3.U_F,
+                self.slot_C.left_of_central_maximum_3.maximum_x,
+                self.slot_C.left_of_central_maximum_3.U_F,
             ]
         )
         table.add_column(
@@ -282,12 +272,12 @@ class MaximumIntensityData:
             [
                 "Stanga MC",
                 "2",
-                self.left_of_central_maximum_2.slot_A.maximum_x,
-                self.left_of_central_maximum_2.slot_A.U_F,
-                self.left_of_central_maximum_2.slot_B.maximum_x,
-                self.left_of_central_maximum_2.slot_B.U_F,
-                self.left_of_central_maximum_2.slot_C.maximum_x,
-                self.left_of_central_maximum_2.slot_C.U_F,
+                self.slot_A.left_of_central_maximum_2.maximum_x,
+                self.slot_A.left_of_central_maximum_2.U_F,
+                self.slot_B.left_of_central_maximum_2.maximum_x,
+                self.slot_B.left_of_central_maximum_2.U_F,
+                self.slot_C.left_of_central_maximum_2.maximum_x,
+                self.slot_C.left_of_central_maximum_2.U_F,
             ]
         )
         table.add_column(
@@ -295,12 +285,12 @@ class MaximumIntensityData:
             [
                 "Stanga MC",
                 "1",
-                self.left_of_central_maximum_1.slot_A.maximum_x,
-                self.left_of_central_maximum_1.slot_A.U_F,
-                self.left_of_central_maximum_1.slot_B.maximum_x,
-                self.left_of_central_maximum_1.slot_B.U_F,
-                self.left_of_central_maximum_1.slot_C.maximum_x,
-                self.left_of_central_maximum_1.slot_C.U_F,
+                self.slot_A.left_of_central_maximum_1.maximum_x,
+                self.slot_A.left_of_central_maximum_1.U_F,
+                self.slot_B.left_of_central_maximum_1.maximum_x,
+                self.slot_B.left_of_central_maximum_1.U_F,
+                self.slot_C.left_of_central_maximum_1.maximum_x,
+                self.slot_C.left_of_central_maximum_1.U_F,
             ]
         )
         table.add_column(
@@ -308,12 +298,12 @@ class MaximumIntensityData:
             [
                 "MC",
                 None,
-                self.central_maximum.slot_A.maximum_x,
-                self.central_maximum.slot_A.U_F,
-                self.central_maximum.slot_B.maximum_x,
-                self.central_maximum.slot_B.U_F,
-                self.central_maximum.slot_C.maximum_x,
-                self.central_maximum.slot_C.U_F,
+                self.slot_A.central_maximum.maximum_x,
+                self.slot_A.central_maximum.U_F,
+                self.slot_B.central_maximum.maximum_x,
+                self.slot_B.central_maximum.U_F,
+                self.slot_C.central_maximum.maximum_x,
+                self.slot_C.central_maximum.U_F,
             ]
         )
         table.add_column(
@@ -321,12 +311,12 @@ class MaximumIntensityData:
             [
                 "Dreapta MC",
                 "1",
-                self.right_of_central_maximum_1.slot_A.maximum_x,
-                self.right_of_central_maximum_1.slot_A.U_F,
-                self.right_of_central_maximum_1.slot_B.maximum_x,
-                self.right_of_central_maximum_1.slot_B.U_F,
-                self.right_of_central_maximum_1.slot_C.maximum_x,
-                self.right_of_central_maximum_1.slot_C.U_F,
+                self.slot_A.right_of_central_maximum_1.maximum_x,
+                self.slot_A.right_of_central_maximum_1.U_F,
+                self.slot_B.right_of_central_maximum_1.maximum_x,
+                self.slot_B.right_of_central_maximum_1.U_F,
+                self.slot_C.right_of_central_maximum_1.maximum_x,
+                self.slot_C.right_of_central_maximum_1.U_F,
             ]
         )
         table.add_column(
@@ -334,12 +324,12 @@ class MaximumIntensityData:
             [
                 "Dreapta MC",
                 "2",
-                self.right_of_central_maximum_2.slot_A.maximum_x,
-                self.right_of_central_maximum_2.slot_A.U_F,
-                self.right_of_central_maximum_2.slot_B.maximum_x,
-                self.right_of_central_maximum_2.slot_B.U_F,
-                self.right_of_central_maximum_2.slot_C.maximum_x,
-                self.right_of_central_maximum_2.slot_C.U_F,
+                self.slot_A.right_of_central_maximum_2.maximum_x,
+                self.slot_A.right_of_central_maximum_2.U_F,
+                self.slot_B.right_of_central_maximum_2.maximum_x,
+                self.slot_B.right_of_central_maximum_2.U_F,
+                self.slot_C.right_of_central_maximum_2.maximum_x,
+                self.slot_C.right_of_central_maximum_2.U_F,
             ]
         )
         table.add_column(
@@ -347,12 +337,12 @@ class MaximumIntensityData:
             [
                 "Dreapta MC",
                 "3",
-                self.right_of_central_maximum_3.slot_A.maximum_x,
-                self.right_of_central_maximum_3.slot_A.U_F,
-                self.right_of_central_maximum_3.slot_B.maximum_x,
-                self.right_of_central_maximum_3.slot_B.U_F,
-                self.right_of_central_maximum_3.slot_C.maximum_x,
-                self.right_of_central_maximum_3.slot_C.U_F,
+                self.slot_A.right_of_central_maximum_3.maximum_x,
+                self.slot_A.right_of_central_maximum_3.U_F,
+                self.slot_B.right_of_central_maximum_3.maximum_x,
+                self.slot_B.right_of_central_maximum_3.U_F,
+                self.slot_C.right_of_central_maximum_3.maximum_x,
+                self.slot_C.right_of_central_maximum_3.U_F,
             ]
         )
 
@@ -391,8 +381,8 @@ class MaximumIntensityComputedData:
         order_3: Order
 
         def __init__(self,
-                     slot_left: list[MaximumIntensityData.Measurement.Slot],
-                     slot_right: list[MaximumIntensityData.Measurement.Slot],
+                     slot_left: list[MaximumIntensityData.Slot.Measurement],
+                     slot_right: list[MaximumIntensityData.Slot.Measurement],
                      lambda_: Unum,
                      slot_size: Unum,
                      ):
@@ -428,42 +418,42 @@ class MaximumIntensityComputedData:
                  ):
         self.slot_A = MaximumIntensityComputedData.Slot(
             slot_left=[
-                data.left_of_central_maximum_1.slot_A,
-                data.left_of_central_maximum_2.slot_A,
-                data.left_of_central_maximum_3.slot_A,
+                data.slot_A.left_of_central_maximum_1,
+                data.slot_A.left_of_central_maximum_2,
+                data.slot_A.left_of_central_maximum_3,
             ],
             slot_right=[
-                data.right_of_central_maximum_1.slot_A,
-                data.right_of_central_maximum_2.slot_A,
-                data.right_of_central_maximum_3.slot_A,
+                data.slot_A.right_of_central_maximum_1,
+                data.slot_A.right_of_central_maximum_2,
+                data.slot_A.right_of_central_maximum_3,
             ],
             lambda_=lambda_,
             slot_size=CONSTANTS.SLOT_A
         )
         self.slot_B = MaximumIntensityComputedData.Slot(
             slot_left=[
-                data.left_of_central_maximum_1.slot_B,
-                data.left_of_central_maximum_2.slot_B,
-                data.left_of_central_maximum_3.slot_B,
+                data.slot_B.left_of_central_maximum_1,
+                data.slot_B.left_of_central_maximum_2,
+                data.slot_B.left_of_central_maximum_3,
             ],
             slot_right=[
-                data.right_of_central_maximum_1.slot_B,
-                data.right_of_central_maximum_2.slot_B,
-                data.right_of_central_maximum_3.slot_B,
+                data.slot_B.right_of_central_maximum_1,
+                data.slot_B.right_of_central_maximum_2,
+                data.slot_B.right_of_central_maximum_3,
             ],
             lambda_=lambda_,
             slot_size=CONSTANTS.SLOT_B
         )
         self.slot_C = MaximumIntensityComputedData.Slot(
             slot_left=[
-                data.left_of_central_maximum_1.slot_C,
-                data.left_of_central_maximum_2.slot_C,
-                data.left_of_central_maximum_3.slot_C,
+                data.slot_C.left_of_central_maximum_1,
+                data.slot_C.left_of_central_maximum_2,
+                data.slot_C.left_of_central_maximum_3,
             ],
             slot_right=[
-                data.right_of_central_maximum_1.slot_C,
-                data.right_of_central_maximum_2.slot_C,
-                data.right_of_central_maximum_3.slot_C,
+                data.slot_C.right_of_central_maximum_1,
+                data.slot_C.right_of_central_maximum_2,
+                data.slot_C.right_of_central_maximum_3,
             ],
             lambda_=lambda_,
             slot_size=CONSTANTS.SLOT_C

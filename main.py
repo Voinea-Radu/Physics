@@ -5,6 +5,7 @@ import builtins
 import matplotlib.pyplot as plt
 import numpy as np
 from prettytable import PrettyTable
+from scipy.optimize import fsolve
 from unum import Unum
 from unum.units import *
 import matplotlib.pyplot as plt
@@ -31,62 +32,7 @@ Scopul lucrarii:
 - Se verifica corespondenta dintre teorie si experiment in ceea ce priveste pozitiile si intensitatile maximelor de intesitate luminoasa 
 """
 
-"""
-mV : mm
-1,8 : 27
-2,4 : 26
-6,9 : 25
-3,6 : 24
-10,4 : 23
-33  : 22
-87 : 21
-104 : 20   MAXIM
-64 : 19 
-10,5 : 18
-7,2 : 17
-4,4 : 16
-2,9 : 15
-1,3 : 14
-2,4 : 13
-"""
 
-MAXIMUM_INTENSITY_DATA: MaximumIntensityData = MaximumIntensityData(
-    left_of_central_maximum_3=MaximumIntensityData.Measurement(
-        slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-    ),
-    left_of_central_maximum_2=MaximumIntensityData.Measurement(
-        slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-    ),
-    left_of_central_maximum_1=MaximumIntensityData.Measurement(
-        slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-    ),
-    central_maximum=MaximumIntensityData.Measurement(
-        slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-    ),
-    right_of_central_maximum_1=MaximumIntensityData.Measurement(
-        slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-    ),
-    right_of_central_maximum_2=MaximumIntensityData.Measurement(
-        slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-    ),
-    right_of_central_maximum_3=MaximumIntensityData.Measurement(
-        slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-    )
-)
 
 HEISENBERG_DATA: HeisenbergData = HeisenbergData(
     slot_A_left=[0 * mm, 0 * mm, 0 * mm, 0 * mm],  # List of 4 measurements
@@ -99,114 +45,137 @@ HEISENBERG_DATA: HeisenbergData = HeisenbergData(
 )
 
 
-def plot(x, y, plot_points:list[int]):
+def plot(slot: str, x, y) -> tuple[tuple[list[(float, float)], list[(float, float)]], tuple[list[(float, float)], list[(float, float)]]]:
     x_smooth = np.linspace(builtins.min(x), max(x), 300)
     spline = make_interp_spline(x, y)
     y_smooth = spline(x_smooth)
 
-    plt.plot(x_smooth, y_smooth, label='Spline Curve')
-    plt.scatter(x, y, color='red', label='Original Points')
+    central_max_index = np.argmax(y_smooth)
+    x_smooth_left = x_smooth[:central_max_index]
+    y_smooth_left = y_smooth[:central_max_index]
+    x_smooth_right = x_smooth[central_max_index:]
+    y_smooth_right = y_smooth[central_max_index:]
+
+    min_list_left: list[(float, float)] = []
+    max_list_left: list[(float, float)] = []
+    min_list_right: list[(float, float)] = []
+    max_list_right: list[(float, float)] = []
+
+    for index in range(1, len(y_smooth_left) - 1):
+        if y_smooth_left[index - 1] > y_smooth_left[index] and y_smooth_left[index] < y_smooth_left[index + 1]:
+            min_list_left.append((x_smooth_left[index], y_smooth_left[index]))
+
+    for index in range(1, len(y_smooth_left) - 1):
+        if y_smooth_left[index - 1] < y_smooth_left[index] and y_smooth_left[index] > y_smooth_left[index + 1]:
+            max_list_left.append((x_smooth_left[index], y_smooth_left[index]))
+
+    for index in range(1, len(y_smooth_right) - 1):
+        if y_smooth_right[index - 1] > y_smooth_right[index] and y_smooth_right[index] < y_smooth_right[index + 1]:
+            min_list_right.append((x_smooth_right[index], y_smooth_right[index]))
+
+    for index in range(1, len(y_smooth_right) - 1):
+        if y_smooth_right[index - 1] < y_smooth_right[index] and y_smooth_right[index] > y_smooth_right[index + 1]:
+            max_list_right.append((x_smooth_right[index], y_smooth_right[index]))
+
+    min_list_left = [(float(number_tuple[0]), float(number_tuple[1])) for number_tuple in min_list_left]
+    max_list_left = [(float(number_tuple[0]), float(number_tuple[1])) for number_tuple in max_list_left]
+    min_list_right = [(float(number_tuple[0]), float(number_tuple[1])) for number_tuple in min_list_right]
+    max_list_right = [(float(number_tuple[0]), float(number_tuple[1])) for number_tuple in max_list_right]
+
+    min_list_left.reverse()
+    min_list_left = min_list_left[:3]
+    min_list_left.reverse()
+    max_list_left.reverse()
+    max_list_left = max_list_left[:3]
+    max_list_left.reverse()
+    min_list_right = min_list_right[:3]
+    max_list_right = max_list_right[:3]
+
+    plt.plot(x_smooth, y_smooth, label="Spline Curve")
+    plt.scatter(x, y, color="red", label="Original Points")
     plt.xlabel("X")
     plt.ylabel("Y")
     plt.legend()
-    plt.title("Slot TODO")
-
-    print("ASASA")
-    print(str(spline(18.5)))
-
-    for i_x, i_y in zip(x, y):
-        if i_x in plot_points:
-            plt.text(i_x, i_y, "({}, {})".format(i_x, i_y))
+    plt.title(f"Slot {slot}")
 
     plt.show()
 
-
-def get_min(y: list[int]) -> tuple[int, int, int, int, int, int]:
-    max_1, max_index_1 = builtins.min(y), y.index(builtins.min(y))
-    y[max_index_1] = 10000000
-    max_2, max_index_2 = builtins.min(y), y.index(builtins.min(y))
-    y[max_index_2] = 10000000
-    max_3, max_index_3 = builtins.min(y), y.index(builtins.min(y))
-
-    offset = len(y) // 2
-
-    return max_1, max_index_1 - offset, max_2, max_index_2 - offset, max_3, max_index_3 - offset
+    return (min_list_left, max_list_left), (min_list_right, max_list_right)
 
 
-def get_max(y: list[int]) -> list[(int, int)]:
-    maxs: list[(int, int)] = []
-
-    for i in range(1, len(y) - 1):
-        if y[i] > y[i - 1] and y[i] > y[i + 1]:
-            maxs.append((y[i], i))
-
-    return maxs
+def slot_a() -> tuple[tuple[list[(float, float)], list[(float, float)]], tuple[list[(float, float)], list[(float, float)]]]:
+    y = [0.20, 0.21, 0.19, 0.17, 0.17, 0.20, 0.25, 0.31, 0.34, 0.32, 0.28, 0.26, 0.31, 0.40, 0.53, 0.60, 0.62, 0.58, 0.71, 1.36, 2.7, 5.7, 8.60, 11.9, 13.9, 15.5, 16.4, 12.6, 11.8, 9, 4.9, 3.6, 2.3, 1.4, 1.1, 1, 1.02, 0.81, 0.58, 0.4, 0.31, 0.32, 0.39, 0.41, 0.38, 0.33, 0.24, 0.18, 0.17, 0.19, 0.22, 0.24, 0.23]
+    x = list(range(len(y)))
+    return plot("A", x, y)
 
 
-def lab_c() -> MinimumIntensityData:
-    offset = 20
-    x = list(range(10 - offset, 27 + 1 - offset))  # TODO make this nice
-    y = [0.7, 1.2, 1.9, 1.8, 1.9, 1.7, 4, 5.5, 8.5, 44.2, 120, 64, 10.5, 7.2, 4.4, 2.9, 1.3, 2.4]
-    plot(x, y, [])
-
-    y_left = y[:len(y) // 2]
-    y_right = y[len(y) // 2 + 1:]
-
-
-def lab_b():
-    offset = 20
-    x = list(range(5 - offset, 35 + 2 - offset))
+def lab_b() -> tuple[tuple[list[(float, float)], list[(float, float)]], tuple[list[(float, float)], list[(float, float)]]]:
     y = [0.28, 0.40, 0.56, 0.41, 0.25, 0.59, 1.35, 1.06, 0.92, 1.55, 1.9, 2.5, 9.5, 35.3, 49.5, 53.7, 41.9, 22.3, 6.7, 4.1, 3.8, 2.4, 1.2, 1.5, 1.2, 0.44, 0.36, 0.73, 0.63, 0.32, 0.38, 0.42, ]
-    plot(x, y, [])
-
-    y_left = y[:len(y) // 2]
-    y_right = y[len(y) // 2 + 1:]
-
-    print(get_max(y_left))
-    print(get_max(y_right))
-
-    y_left = y[:len(y) // 2]
-    y_right = y[len(y) // 2 + 1:]
-    left_min_1, left_min_index_1, left_min_2, left_min_index_2, left_min_3, left_min_index_3 = get_min(y_left)
-    right_min_1, right_min_index_1, right_min_2, right_min_index_2, right_min_3, right_min_index_3 = get_min(y_right)
+    x = list(range(len(y)))
+    return plot("B", x, y)
 
 
-    return MinimumIntensityData(
-        left_of_central_minimum_3=left_min_index_3 * mm,
-        left_of_central_minimum_2=left_min_index_2 * mm,
-        left_of_central_minimum_1=left_min_index_1 * mm,
-        right_of_central_minimum_1=right_min_index_1 * mm,
-        right_of_central_minimum_2=right_min_index_2 * mm,
-        right_of_central_minimum_3=right_min_index_3 * mm,
-    )
-
-
-def lab_a():
-    offset = 20
-    x = list(range(-5 - offset, 46 + 2 - offset))
-    y = [0.20, 0.21, 0.19, 0.17, 0.17, 0.20, 0.25, 0.31, 0.34, 0.32, 0.28, 0.26, 0.31, 0.40, 0.53, 0.60, 0.62, 0.58, 0.71, 1.36, 2.7, 5.7, 8.60, 11.9, 13.9, 15.5, 16.4, 12.6, 12.3, 9, 4.9, 3.6, 2.3, 1.4, 1.1, 1, 1.02, 0.81, 0.58, 0.4, 0.31, 0.32, 0.39, 0.41, 0.38, 0.33, 0.24, 0.18, 0.17, 0.19, 0.22, 0.24, 0.23]
-    plot(x, y, [11, 18, 27])
-
+def lab_c() -> tuple[tuple[list[(float, float)], list[(float, float)]], tuple[list[(float, float)], list[(float, float)]]]:
+    y = [0.7, 1.2, 1.9, 1.8, 1.9, 1.7, 4, 5.5, 8.5, 44.2, 120, 64, 10.5, 7.2, 4.4, 2.9, 1.3, 2.4]
+    x = list(range(len(y)))
+    return plot("C", x, y)
 
 
 def main():
+    (min_list_left, max_list_left), (min_list_right, max_list_right) = slot_a()
+    # lab_b()
+    # lab_c()
+
+    print(min_list_left)
+    print(max_list_left)
+    print(min_list_right)
+    print(max_list_right)
+
     minimum_intensity_data = MinimumIntensityData(
-        left_of_central_minimum_3=0 * mm,
-        left_of_central_minimum_2=0 * mm,
-        left_of_central_minimum_1=0 * mm,
-        right_of_central_minimum_1=0 * mm,
-        right_of_central_minimum_2=0 * mm,
-        right_of_central_minimum_3=0 * mm,
+        left = [number * mm for number, _ in min_list_left],
+        right = [number * mm for number, _ in min_list_right],
     )
 
-    lab_a()
-    lab_c()
+    maximum_intensity_data: MaximumIntensityData = MaximumIntensityData(
+        left_of_central_maximum_3=MaximumIntensityData.Measurement(
+            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+        ),
+        left_of_central_maximum_2=MaximumIntensityData.Measurement(
+            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+        ),
+        left_of_central_maximum_1=MaximumIntensityData.Measurement(
+            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+        ),
+        central_maximum=MaximumIntensityData.Measurement(
+            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+        ),
+        right_of_central_maximum_1=MaximumIntensityData.Measurement(
+            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+        ),
+        right_of_central_maximum_2=MaximumIntensityData.Measurement(
+            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+        ),
+        right_of_central_maximum_3=MaximumIntensityData.Measurement(
+            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
+        )
+    )
 
     minimum_intensity_table = minimum_intensity_data.create_table()
     write_to_csv(MINIMUM_INTENSITY_TABLE_FILE, minimum_intensity_table)
-
-    if 1 == 1:
-        return
 
     maximum_intensity_table = MAXIMUM_INTENSITY_DATA.create_table()
     write_to_csv(MAXIMUM_INTENSITY_TABLE_FILE, maximum_intensity_table)
