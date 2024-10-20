@@ -41,18 +41,18 @@ class Constants:
 
         self.ORDER_1 = Constants.Order(
             order=1,
-            epsilon_M=4.493 * cm,
-            I_n=0.0472 * cm
+            epsilon_M=4.493 * mm/mm,
+            I_n=0.0472 * mm
         )
         self.ORDER_2 = Constants.Order(
             order=2,
-            epsilon_M=47.725 * cm,
-            I_n=0.0168 * cm
+            epsilon_M=7.725 *mm/mm,
+            I_n=0.0168 * mm
         )
         self.ORDER_3 = Constants.Order(
             order=3,
-            epsilon_M=10.904 * cm,
-            I_n=0.00834 * cm
+            epsilon_M=10.904 * mm/mm,
+            I_n=0.00834 * mm
         )
 
     def get_order(self, order: int) -> Order:

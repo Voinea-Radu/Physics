@@ -2,7 +2,7 @@ from prettytable import PrettyTable
 from unum import Unum
 from unum.units import *
 
-from constants import CONSTANTS
+from constants import CONSTANTS, Constants
 from utils import Median
 
 
@@ -37,6 +37,10 @@ class Slot:
 
 def compute_lambda(x_mn: Unum, order: int, slot_size: Unum) -> Unum:
     return (x_mn * slot_size) / (CONSTANTS.D * order)
+
+
+def compute_xmn(x_left: Unum, x_right: Unum) -> Unum:
+    return (abs(x_left) + abs(x_right)) / 2
 
 
 class MinimumIntensityData:
@@ -143,28 +147,25 @@ class MinimumIntensityComputedData:
     order_2: Order
     order_3: Order
 
-    def compute_xmn(self, x_left: Unum, x_right: Unum) -> Unum:
-        return abs((x_left - x_right) / 2)
-
     def __init__(self, data: MinimumIntensityData, slot_size: Unum):
         self.order_1 = MinimumIntensityComputedData.Order(
             1,
-            x_mn=self.compute_xmn(data.left_of_central_minimum_1, data.right_of_central_minimum_1),
+            x_mn=compute_xmn(data.left_of_central_minimum_1, data.right_of_central_minimum_1),
             slot_size=slot_size
         )
         self.order_2 = MinimumIntensityComputedData.Order(
             2,
-            x_mn=self.compute_xmn(data.left_of_central_minimum_2, data.right_of_central_minimum_2),
+            x_mn=compute_xmn(data.left_of_central_minimum_2, data.right_of_central_minimum_2),
             slot_size=slot_size
         )
         self.order_3 = MinimumIntensityComputedData.Order(
             3,
-            x_mn=self.compute_xmn(data.left_of_central_minimum_3, data.right_of_central_minimum_3),
+            x_mn=compute_xmn(data.left_of_central_minimum_3, data.right_of_central_minimum_3),
             slot_size=slot_size
         )
 
     def get_median(self) -> Median:
-        return Median([self.order_1.lambda_ , self.order_2.lambda_ , self.order_3.lambda_])
+        return Median([self.order_1.lambda_, self.order_2.lambda_, self.order_3.lambda_])
 
     def create_table(self) -> PrettyTable:
         table: PrettyTable = PrettyTable()
@@ -187,7 +188,7 @@ class MinimumIntensityComputedData:
             ]
         )
         table.add_column(
-            "C2" ,
+            "C2",
             [
                 "2",
                 self.order_2.x_mn,
@@ -214,7 +215,7 @@ class MaximumIntensityData:
     def __init__(self,
                  slot_A: Slot,
                  slot_B: Slot,
-                 slot_C: Slot,
+                 slot_C: Slot = None,
                  ):
         self.slot_A = slot_A
         self.slot_B = slot_B
@@ -277,7 +278,7 @@ class MaximumIntensityData:
                 self.slot_A.left_maximums[0].U_F,
                 self.slot_B.left_maximums[0].x,
                 self.slot_B.left_maximums[0].U_F,
-            ] +( [self.slot_C.left_maximums[0].x, self.slot_C.left_maximums[0].U_F] if self.slot_C is not None else [])
+            ] + ([self.slot_C.left_maximums[0].x, self.slot_C.left_maximums[0].U_F] if self.slot_C is not None else [])
         )
         table.add_column(
             "C5",
@@ -321,7 +322,7 @@ class MaximumIntensityData:
                 self.slot_A.right_maximums[2].U_F,
                 self.slot_B.right_maximums[2].x,
                 self.slot_B.right_maximums[2].U_F,
-            ] +( [self.slot_C.right_maximums[2].x, self.slot_C.right_maximums[2].U_F] if self.slot_C is not None else [])
+            ] + ([self.slot_C.right_maximums[2].x, self.slot_C.right_maximums[2].U_F] if self.slot_C is not None else [])
         )
 
         return table
@@ -330,7 +331,6 @@ class MaximumIntensityData:
 class MaximumIntensityComputedData:
     class Slot:
         class Order:
-            order_number: int
             X_Mne: Unum
             X_Mnt: Unum
             k_xM: Unum
@@ -342,46 +342,49 @@ class MaximumIntensityComputedData:
                          X_left: Unum,
                          X_right: Unum,
                          lambda_: Unum,
-
                          slot_size: Unum,
                          ):
-                self.order_number = order_id
-                self.X_Mne = abs((X_left - X_right) / 2)
+                self.X_Mne = compute_xmn(X_left, X_right)
 
-                self.X_Mnt = (lambda_ * CONSTANTS.D * CONSTANTS.get_order(order_id).epsilon_M) / (CONSTANTS.PI * slot_size)
+                self.X_Mnt = ((lambda_ * CONSTANTS.D * CONSTANTS.get_order(order_id).epsilon_M) / (CONSTANTS.PI * slot_size)).asUnit(mm)
                 self.k_xM = self.X_Mne / self.X_Mnt
 
-                self.I_ne = 0 * mm / mm  # TODO
+                epsilon_m = (CONSTANTS.PI * slot_size * self.X_Mne) / (lambda_ * CONSTANTS.D)
+                print(epsilon_m)
+
+                from math import sin
+                self.I_ne = (sin(epsilon_m) ** 2) / (epsilon_m**2)  # TODO
                 self.k_I = self.I_ne / CONSTANTS.get_order(order_id).I_n
+
+                self.I_ne = f"{self.I_ne.asNumber():.6f}"
 
         order_1: Order
         order_2: Order
         order_3: Order
 
         def __init__(self,
-                     slot_left: list[Slot.Measurement],
-                     slot_right: list[Slot.Measurement],
+                     slot: Slot,
                      lambda_: Unum,
                      slot_size: Unum,
                      ):
             self.order_1 = MaximumIntensityComputedData.Slot.Order(
                 order_id=1,
-                X_left=slot_left[0].x,
-                X_right=slot_right[0].x,
+                X_left=slot.left_maximums[0].x,
+                X_right=slot.right_maximums[0].x,
                 lambda_=lambda_,
                 slot_size=slot_size,
             )
             self.order_2 = MaximumIntensityComputedData.Slot.Order(
                 order_id=2,
-                X_left=slot_left[1].x,
-                X_right=slot_right[1].x,
+                X_left=slot.left_maximums[1].x,
+                X_right=slot.right_maximums[1].x,
                 lambda_=lambda_,
                 slot_size=slot_size,
             )
             self.order_3 = MaximumIntensityComputedData.Slot.Order(
                 order_id=3,
-                X_left=slot_left[2].x,
-                X_right=slot_right[2].x,
+                X_left=slot.left_maximums[2].x,
+                X_right=slot.right_maximums[2].x,
                 lambda_=lambda_,
                 slot_size=slot_size,
             )
@@ -391,25 +394,24 @@ class MaximumIntensityComputedData:
     slot_C: Slot
 
     def __init__(self,
-                 data: MaximumIntensityData,
-                 lambda_: Unum
+                 lambda_: Unum,
+                 slot_A: Slot,
+                 slot_B: Slot,
+                 slot_C: Slot = None,
                  ):
         self.slot_A = MaximumIntensityComputedData.Slot(
-            slot_left=data.slot_A.left_maximums,
-            slot_right=data.slot_A.right_maximums,
+            slot=slot_A,
             lambda_=lambda_,
             slot_size=CONSTANTS.SLOT_A
         )
         self.slot_B = MaximumIntensityComputedData.Slot(
-            slot_left=data.slot_B.left_maximums,
-            slot_right=data.slot_B.right_maximums,
+            slot=slot_B,
             lambda_=lambda_,
             slot_size=CONSTANTS.SLOT_B
         )
-        if data.slot_C is not None:
+        if slot_C is not None:
             self.slot_C = MaximumIntensityComputedData.Slot(
-                slot_left=data.slot_C.left_maximums,
-                slot_right=data.slot_C.right_maximums,
+                slot=slot_C,
                 lambda_=lambda_,
                 slot_size=CONSTANTS.SLOT_C
             )
@@ -422,19 +424,19 @@ class MaximumIntensityComputedData:
             [
                 None,
                 "Ordin maxim",
-                "X_Mne",
-                "X_Mnt",
+                "X_Mne (mm)",
+                "X_Mnt (mm)",
                 "k_xM",
                 "I_ne",
                 "k_I",
             ]
         )
 
-        for slot in [self.slot_A, self.slot_B ] + ([self.slot_C] if hasattr(self, "slot_C") else []):
+        for (index, slot) in enumerate([self.slot_A, self.slot_B] + ([self.slot_C] if hasattr(self, "slot_C") else [])):
             table.add_column(
                 "C1",
                 [
-                    "Fanta A",
+                    "Fanta " + chr(ord("A") + index),
                     "1",
                     slot.order_1.X_Mne,
                     slot.order_1.X_Mnt,
@@ -446,7 +448,7 @@ class MaximumIntensityComputedData:
             table.add_column(
                 "C2",
                 [
-                    "Fanta A",
+                    "Fanta " + chr(ord("A") + index),
                     "2",
                     slot.order_2.X_Mne,
                     slot.order_2.X_Mnt,
@@ -458,7 +460,7 @@ class MaximumIntensityComputedData:
             table.add_column(
                 "C3",
                 [
-                    "Fanta A",
+                    "Fanta " + chr(ord("A") + index),
                     "3",
                     slot.order_3.X_Mne,
                     slot.order_3.X_Mnt,
@@ -495,20 +497,26 @@ class HeisenbergData:
     slot_C: Slot
 
     def __init__(self,
+                 lambda_: Unum,
                  slot_A_left: list[Unum],
                  slot_A_right: list[Unum],
                  slot_B_left: list[Unum],
                  slot_B_right: list[Unum],
-                 slot_C_left: list[Unum],
-                 slot_C_right: list[Unum],
-                 lambda_: Unum
+                 slot_C_left: list[Unum] = None,
+                 slot_C_right: list[Unum] = None,
                  ):
         self.slot_A_left = slot_A_left
         self.slot_A_right = slot_A_right
         self.slot_B_left = slot_B_left
         self.slot_B_right = slot_B_right
-        self.slot_C_left = slot_C_left
-        self.slot_C_right = slot_C_right
+
+
+        if slot_C_left is not None and slot_C_right is not None:
+            self.slot_C_left = slot_C_left
+            self.slot_C_right = slot_C_right
+
+        self.compute(lambda_)
+
 
     def compute(self, lambda_: Unum):
         self.slot_A = HeisenbergData.Slot(
@@ -523,12 +531,13 @@ class HeisenbergData:
             CONSTANTS.SLOT_B,
             lambda_
         )
-        self.slot_C = HeisenbergData.Slot(
-            self.slot_C_left,
-            self.slot_C_right,
-            CONSTANTS.SLOT_C,
-            lambda_
-        )
+        if hasattr(self, "slot_C_left") and hasattr(self, "slot_C_right"):
+            self.slot_C = HeisenbergData.Slot(
+                self.slot_C_left,
+                self.slot_C_right,
+                CONSTANTS.SLOT_C,
+                lambda_
+            )
 
     def create_table(self) -> PrettyTable:
         table = PrettyTable()
@@ -545,7 +554,7 @@ class HeisenbergData:
             ]
         )
 
-        for (index, slot) in enumerate([self.slot_A, self.slot_B, self.slot_C]):
+        for (index, slot) in enumerate([self.slot_A, self.slot_B] + ([self.slot_C] if hasattr(self, "slot_C") else [])):
             table.add_column(
                 "C1",
                 [

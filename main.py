@@ -18,7 +18,7 @@ from scipy.interpolate import make_interp_spline
 
 from constants import CONSTANTS
 from table_setup import MinimumIntensityData, MaximumIntensityData, MinimumIntensityComputedData, MaximumIntensityComputedData, HeisenbergData, Slot
-from utils import get_column, write_to_csv, delete_file, append_to_file, kV, mV
+from utils import get_column, write_to_csv, delete_file, append_to_file, kV, mV, Median
 
 RESULTS_FILE: str = "results.txt"
 MINIMUM_INTENSITY_TABLE_FILE: str = "minimum_intensity.csv"
@@ -33,16 +33,6 @@ Scopul lucrarii:
 - Se masoara lungimea de unda a radiatiei difractate
 - Se verifica corespondenta dintre teorie si experiment in ceea ce priveste pozitiile si intensitatile maximelor de intesitate luminoasa 
 """
-
-HEISENBERG_DATA: HeisenbergData = HeisenbergData(
-    slot_A_left=[0 * mm, 0 * mm, 0 * mm, 0 * mm],  # List of 4 measurements
-    slot_A_right=[0 * mm, 0 * mm, 0 * mm, 0 * mm],  # List of 4 measurements
-    slot_B_left=[0 * mm, 0 * mm, 0 * mm, 0 * mm],  # List of 4 measurements
-    slot_B_right=[0 * mm, 0 * mm, 0 * mm, 0 * mm],  # List of 4 measurements
-    slot_C_left=[0 * mm, 0 * mm, 0 * mm, 0 * mm],  # List of 4 measurements
-    slot_C_right=[0 * mm, 0 * mm, 0 * mm, 0 * mm],  # List of 4 measurements
-    lambda_=0 * nm,
-)
 
 
 def plot(slot: str, y) -> Slot:
@@ -90,7 +80,6 @@ def plot(slot: str, y) -> Slot:
     left_minimums = left_minimums[:3]
     left_minimums.reverse()
 
-    left_maximums.reverse()
     left_maximums = left_maximums[:3]
     left_maximums.reverse()
 
@@ -121,7 +110,7 @@ def slot_a() -> Slot:
 
 
 def slot_b() -> Slot:
-    y = [0.19, 0.31, 0.28, 0.40, 0.56, 0.41, 0.25, 0.59, 1.35, 1.06, 0.92, 1.55, 1.9, 2.5, 9.5, 35.3, 49.5, 53.7, 41.9, 22.3, 6.7, 4.1, 3.8, 2.4, 1.2, 1.5, 1.2, 0.44, 0.36, 0.73, 0.63, 0.32, 0.38, 0.42, ]
+    y = [0.19, 0.31, 0.28, 0.40, 0.56, 0.41, 0.25, 0.59, 1.35, 1.06, 0.92, 1.55, 1.9, 2.5, 7.5, 35.3, 49.5, 53.7, 41.9, 22.3, 6.7, 4.1, 3.8, 2.4, 1.2, 1.5, 1.2, 0.44, 0.36, 0.73, 0.63, 0.32, 0.38, 0.42, ]
     return plot("B", y)
 
 
@@ -134,26 +123,7 @@ def main():
     A = slot_a()
     B = slot_b()
     # C = lab_c()
-
-    print("A.left_minimums  : " + str(len(A.left_minimums)))
-    print("A.right_minimums : " + str(len(A.right_minimums)))
-    print("A.left_maximums  : " + str(len(A.left_maximums)))
-    print("A.right_maximums : " + str(len(A.right_maximums)))
-    print()
-
-    print("B.left_minimums  : " + str(len(B.left_minimums)))
-    print("B.right_minimums : " + str(len(B.right_minimums)))
-    print("B.left_maximums  : " + str(len(B.left_maximums)))
-    print("B.right_maximums : " + str(len(B.right_maximums)))
-    print()
-
-    # print("C.left_minimums  : " + str(len(C.left_minimums)))
-    # print("C.right_minimums : " + str(len(C.right_minimums)))
-    # print(str(C.right_minimums[0].x) + " " + str(C.right_minimums[0].U_F))
-    # print(str(C.right_minimums[1].x) + " " + str(C.right_minimums[1].U_F))
-    # print("C.left_maximums  : " + str(len(C.left_maximums)))
-    # print("C.right_maximums : " + str(len(C.right_maximums)))
-    # print()
+    C = None
 
     minimum_intensity_data = MinimumIntensityData(A)
     minimum_intensity_table = minimum_intensity_data.create_table()
@@ -162,7 +132,6 @@ def main():
     maximum_intensity_data: MaximumIntensityData = MaximumIntensityData(
         slot_A=A,
         slot_B=B,
-        slot_C=None,
     )
     maximum_intensity_table = maximum_intensity_data.create_table()
     write_to_csv(MAXIMUM_INTENSITY_TABLE_FILE, maximum_intensity_table)
@@ -170,14 +139,32 @@ def main():
     computed_minimum_intensity_computed_data: MinimumIntensityComputedData = MinimumIntensityComputedData(minimum_intensity_data, CONSTANTS.SLOT_A)
     write_to_csv(MINIMUM_INTENSITY_WAVE_LENGTH_TABLE_FILE, computed_minimum_intensity_computed_data.create_table())
     lambda_ = computed_minimum_intensity_computed_data.get_median().median.asUnit(nm)
-    if lambda_ == 0 * nm:
-        lambda_ = 0.0001 * nm
     lambda_error = computed_minimum_intensity_computed_data.get_median().square_deviation.asUnit(nm)
 
-    computed_maximum_intensity_computed_data: MaximumIntensityComputedData = MaximumIntensityComputedData(maximum_intensity_data, lambda_)
+    computed_maximum_intensity_computed_data: MaximumIntensityComputedData = MaximumIntensityComputedData(
+        lambda_=lambda_,
+        slot_A=A,
+        slot_B=B
+    )
     write_to_csv(MAXIMUM_INTENSITY_WAVE_LENGTH_TABLE_FILE, computed_maximum_intensity_computed_data.create_table())
 
-    append_to_file(RESULTS_FILE, f"lambda = ({lambda_} +- {lambda_error}) nm")
+    heisenberg_data = HeisenbergData(
+        lambda_=lambda_,
+        slot_A_left=[-8 , -9 , -10 , -8.5 ] * mm,
+        slot_A_right=[8.5 , 10.5 , 8 , 9.5 ]*mm,
+        slot_B_left=[-4 , -3.5 , -4.5, -3]*mm,
+        slot_B_right=[4.5, 4, 3.5, 4] * mm,
+    )
+
+    K_H_median = Median(heisenberg_data.slot_A.k_H + heisenberg_data.slot_B.k_H + (heisenberg_data.slot_C.k_H if C is not None else []))
+    K_H = K_H_median.median
+    K_H_error = K_H_median.square_deviation
+
+    write_to_csv(HEISENBERG_TABLE_FILE, heisenberg_data.create_table())
+
+
+    append_to_file(RESULTS_FILE, f"lambda = ({lambda_.asNumber()} +- {lambda_error.asNumber()}) nm")
+    append_to_file(RESULTS_FILE, f"K_H = ({K_H.asNumber()} +- {K_H_error.asNumber()})")
     append_to_file(RESULTS_FILE, f"")
     append_to_file(RESULTS_FILE, f"")
     append_to_file(RESULTS_FILE, f"Q: Care este diferenta dintre difractie si interferenta? Dar intre difractie si refractie?")
