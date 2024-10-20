@@ -4,6 +4,7 @@ import builtins
 
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.ma.core import minimum
 from prettytable import PrettyTable
 from scipy.optimize import fsolve
 from unum import Unum
@@ -15,7 +16,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import make_interp_spline
 
-from table_setup import MinimumIntensityData, MaximumIntensityData, MinimumIntensityComputedData, MaximumIntensityComputedData, HeisenbergData
+from constants import CONSTANTS
+from table_setup import MinimumIntensityData, MaximumIntensityData, MinimumIntensityComputedData, MaximumIntensityComputedData, HeisenbergData, Slot
 from utils import get_column, write_to_csv, delete_file, append_to_file, kV, mV
 
 RESULTS_FILE: str = "results.txt"
@@ -32,8 +34,6 @@ Scopul lucrarii:
 - Se verifica corespondenta dintre teorie si experiment in ceea ce priveste pozitiile si intensitatile maximelor de intesitate luminoasa 
 """
 
-
-
 HEISENBERG_DATA: HeisenbergData = HeisenbergData(
     slot_A_left=[0 * mm, 0 * mm, 0 * mm, 0 * mm],  # List of 4 measurements
     slot_A_right=[0 * mm, 0 * mm, 0 * mm, 0 * mm],  # List of 4 measurements
@@ -45,51 +45,57 @@ HEISENBERG_DATA: HeisenbergData = HeisenbergData(
 )
 
 
-def plot(slot: str, x, y) -> tuple[tuple[list[(float, float)], list[(float, float)]], tuple[list[(float, float)], list[(float, float)]]]:
+def plot(slot: str, y) -> Slot:
+    offset = y.index(max(y))
+    x = [entry - offset for entry in list(range(len(y)))]
+
     x_smooth = np.linspace(builtins.min(x), max(x), 300)
     spline = make_interp_spline(x, y)
     y_smooth = spline(x_smooth)
 
     central_max_index = np.argmax(y_smooth)
+
     x_smooth_left = x_smooth[:central_max_index]
     y_smooth_left = y_smooth[:central_max_index]
     x_smooth_right = x_smooth[central_max_index:]
     y_smooth_right = y_smooth[central_max_index:]
 
-    min_list_left: list[(float, float)] = []
-    max_list_left: list[(float, float)] = []
-    min_list_right: list[(float, float)] = []
-    max_list_right: list[(float, float)] = []
+    left_minimums: list[(float, float)] = []
+    right_minimums: list[(float, float)] = []
+    left_maximums: list[(float, float)] = []
+    right_maximums: list[(float, float)] = []
 
     for index in range(1, len(y_smooth_left) - 1):
         if y_smooth_left[index - 1] > y_smooth_left[index] and y_smooth_left[index] < y_smooth_left[index + 1]:
-            min_list_left.append((x_smooth_left[index], y_smooth_left[index]))
+            left_minimums.append((x_smooth_left[index], y_smooth_left[index]))
 
     for index in range(1, len(y_smooth_left) - 1):
         if y_smooth_left[index - 1] < y_smooth_left[index] and y_smooth_left[index] > y_smooth_left[index + 1]:
-            max_list_left.append((x_smooth_left[index], y_smooth_left[index]))
+            left_maximums.append((x_smooth_left[index], y_smooth_left[index]))
 
     for index in range(1, len(y_smooth_right) - 1):
         if y_smooth_right[index - 1] > y_smooth_right[index] and y_smooth_right[index] < y_smooth_right[index + 1]:
-            min_list_right.append((x_smooth_right[index], y_smooth_right[index]))
+            right_minimums.append((x_smooth_right[index], y_smooth_right[index]))
 
     for index in range(1, len(y_smooth_right) - 1):
         if y_smooth_right[index - 1] < y_smooth_right[index] and y_smooth_right[index] > y_smooth_right[index + 1]:
-            max_list_right.append((x_smooth_right[index], y_smooth_right[index]))
+            right_maximums.append((x_smooth_right[index], y_smooth_right[index]))
 
-    min_list_left = [(float(number_tuple[0]), float(number_tuple[1])) for number_tuple in min_list_left]
-    max_list_left = [(float(number_tuple[0]), float(number_tuple[1])) for number_tuple in max_list_left]
-    min_list_right = [(float(number_tuple[0]), float(number_tuple[1])) for number_tuple in min_list_right]
-    max_list_right = [(float(number_tuple[0]), float(number_tuple[1])) for number_tuple in max_list_right]
+    left_minimums: list[Slot.Measurement] = [Slot.Measurement(float(number_tuple[0]) * mm, float(number_tuple[1]) * mV) for number_tuple in left_minimums]
+    left_maximums: list[Slot.Measurement] = [Slot.Measurement(float(number_tuple[0]) * mm, float(number_tuple[1]) * mV) for number_tuple in left_maximums]
+    right_minimums: list[Slot.Measurement] = [Slot.Measurement(float(number_tuple[0]) * mm, float(number_tuple[1]) * mV) for number_tuple in right_minimums]
+    right_maximums: list[Slot.Measurement] = [Slot.Measurement(float(number_tuple[0]) * mm, float(number_tuple[1]) * mV) for number_tuple in right_maximums]
 
-    min_list_left.reverse()
-    min_list_left = min_list_left[:3]
-    min_list_left.reverse()
-    max_list_left.reverse()
-    max_list_left = max_list_left[:3]
-    max_list_left.reverse()
-    min_list_right = min_list_right[:3]
-    max_list_right = max_list_right[:3]
+    left_minimums.reverse()
+    left_minimums = left_minimums[:3]
+    left_minimums.reverse()
+
+    left_maximums.reverse()
+    left_maximums = left_maximums[:3]
+    left_maximums.reverse()
+
+    right_minimums = right_minimums[:3]
+    right_maximums = right_maximums[:3]
 
     plt.plot(x_smooth, y_smooth, label="Spline Curve")
     plt.scatter(x, y, color="red", label="Original Points")
@@ -100,94 +106,75 @@ def plot(slot: str, x, y) -> tuple[tuple[list[(float, float)], list[(float, floa
 
     plt.show()
 
-    return (min_list_left, max_list_left), (min_list_right, max_list_right)
+    return Slot(
+        left_minimums=left_minimums,
+        right_minimums=right_minimums,
+        left_maximums=left_maximums,
+        right_maximums=right_maximums,
+        central_maximum=Slot.Measurement(x_smooth[central_max_index] * mm, y_smooth[central_max_index] * mV),
+    )
 
 
-def slot_a() -> tuple[tuple[list[(float, float)], list[(float, float)]], tuple[list[(float, float)], list[(float, float)]]]:
+def slot_a() -> Slot:
     y = [0.20, 0.21, 0.19, 0.17, 0.17, 0.20, 0.25, 0.31, 0.34, 0.32, 0.28, 0.26, 0.31, 0.40, 0.53, 0.60, 0.62, 0.58, 0.71, 1.36, 2.7, 5.7, 8.60, 11.9, 13.9, 15.5, 16.4, 12.6, 11.8, 9, 4.9, 3.6, 2.3, 1.4, 1.1, 1, 1.02, 0.81, 0.58, 0.4, 0.31, 0.32, 0.39, 0.41, 0.38, 0.33, 0.24, 0.18, 0.17, 0.19, 0.22, 0.24, 0.23]
-    x = list(range(len(y)))
-    return plot("A", x, y)
+    return plot("A", y)
 
 
-def lab_b() -> tuple[tuple[list[(float, float)], list[(float, float)]], tuple[list[(float, float)], list[(float, float)]]]:
-    y = [0.28, 0.40, 0.56, 0.41, 0.25, 0.59, 1.35, 1.06, 0.92, 1.55, 1.9, 2.5, 9.5, 35.3, 49.5, 53.7, 41.9, 22.3, 6.7, 4.1, 3.8, 2.4, 1.2, 1.5, 1.2, 0.44, 0.36, 0.73, 0.63, 0.32, 0.38, 0.42, ]
-    x = list(range(len(y)))
-    return plot("B", x, y)
+def slot_b() -> Slot:
+    y = [0.19, 0.31, 0.28, 0.40, 0.56, 0.41, 0.25, 0.59, 1.35, 1.06, 0.92, 1.55, 1.9, 2.5, 9.5, 35.3, 49.5, 53.7, 41.9, 22.3, 6.7, 4.1, 3.8, 2.4, 1.2, 1.5, 1.2, 0.44, 0.36, 0.73, 0.63, 0.32, 0.38, 0.42, ]
+    return plot("B", y)
 
 
-def lab_c() -> tuple[tuple[list[(float, float)], list[(float, float)]], tuple[list[(float, float)], list[(float, float)]]]:
-    y = [0.7, 1.2, 1.9, 1.8, 1.9, 1.7, 4, 5.5, 8.5, 44.2, 120, 64, 10.5, 7.2, 4.4, 2.9, 1.3, 2.4]
-    x = list(range(len(y)))
-    return plot("C", x, y)
+def lab_c() -> Slot:
+    y = [0.7, 1.2, 1.9, 1.8, 1.9, 1.7, 4, 5.5, 8.5, 44.2, 120, 64, 10.5, 7.2, 4.4, 2.9, 1.3, 2.4, 1.1]
+    return plot("C", y)
 
 
 def main():
-    (min_list_left, max_list_left), (min_list_right, max_list_right) = slot_a()
-    # lab_b()
-    # lab_c()
+    A = slot_a()
+    B = slot_b()
+    # C = lab_c()
 
-    print(min_list_left)
-    print(max_list_left)
-    print(min_list_right)
-    print(max_list_right)
+    print("A.left_minimums  : " + str(len(A.left_minimums)))
+    print("A.right_minimums : " + str(len(A.right_minimums)))
+    print("A.left_maximums  : " + str(len(A.left_maximums)))
+    print("A.right_maximums : " + str(len(A.right_maximums)))
+    print()
 
-    minimum_intensity_data = MinimumIntensityData(
-        left = [number * mm for number, _ in min_list_left],
-        right = [number * mm for number, _ in min_list_right],
-    )
+    print("B.left_minimums  : " + str(len(B.left_minimums)))
+    print("B.right_minimums : " + str(len(B.right_minimums)))
+    print("B.left_maximums  : " + str(len(B.left_maximums)))
+    print("B.right_maximums : " + str(len(B.right_maximums)))
+    print()
 
-    maximum_intensity_data: MaximumIntensityData = MaximumIntensityData(
-        left_of_central_maximum_3=MaximumIntensityData.Measurement(
-            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        ),
-        left_of_central_maximum_2=MaximumIntensityData.Measurement(
-            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        ),
-        left_of_central_maximum_1=MaximumIntensityData.Measurement(
-            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        ),
-        central_maximum=MaximumIntensityData.Measurement(
-            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        ),
-        right_of_central_maximum_1=MaximumIntensityData.Measurement(
-            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        ),
-        right_of_central_maximum_2=MaximumIntensityData.Measurement(
-            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        ),
-        right_of_central_maximum_3=MaximumIntensityData.Measurement(
-            slot_A=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_B=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-            slot_C=MaximumIntensityData.Measurement.Slot(0 * mm, 0 * mV),
-        )
-    )
+    # print("C.left_minimums  : " + str(len(C.left_minimums)))
+    # print("C.right_minimums : " + str(len(C.right_minimums)))
+    # print(str(C.right_minimums[0].x) + " " + str(C.right_minimums[0].U_F))
+    # print(str(C.right_minimums[1].x) + " " + str(C.right_minimums[1].U_F))
+    # print("C.left_maximums  : " + str(len(C.left_maximums)))
+    # print("C.right_maximums : " + str(len(C.right_maximums)))
+    # print()
 
+    minimum_intensity_data = MinimumIntensityData(A)
     minimum_intensity_table = minimum_intensity_data.create_table()
     write_to_csv(MINIMUM_INTENSITY_TABLE_FILE, minimum_intensity_table)
 
-    maximum_intensity_table = MAXIMUM_INTENSITY_DATA.create_table()
+    maximum_intensity_data: MaximumIntensityData = MaximumIntensityData(
+        slot_A=A,
+        slot_B=B,
+        slot_C=None,
+    )
+    maximum_intensity_table = maximum_intensity_data.create_table()
     write_to_csv(MAXIMUM_INTENSITY_TABLE_FILE, maximum_intensity_table)
 
-    computed_minimum_intensity_computed_data: MinimumIntensityComputedData = MinimumIntensityComputedData(MINIMUM_INTENSITY_DATA)
+    computed_minimum_intensity_computed_data: MinimumIntensityComputedData = MinimumIntensityComputedData(minimum_intensity_data, CONSTANTS.SLOT_A)
     write_to_csv(MINIMUM_INTENSITY_WAVE_LENGTH_TABLE_FILE, computed_minimum_intensity_computed_data.create_table())
     lambda_ = computed_minimum_intensity_computed_data.get_median().median.asUnit(nm)
     if lambda_ == 0 * nm:
         lambda_ = 0.0001 * nm
     lambda_error = computed_minimum_intensity_computed_data.get_median().square_deviation.asUnit(nm)
 
-    computed_maximum_intensity_computed_data: MaximumIntensityComputedData = MaximumIntensityComputedData(MAXIMUM_INTENSITY_DATA, lambda_)
+    computed_maximum_intensity_computed_data: MaximumIntensityComputedData = MaximumIntensityComputedData(maximum_intensity_data, lambda_)
     write_to_csv(MAXIMUM_INTENSITY_WAVE_LENGTH_TABLE_FILE, computed_maximum_intensity_computed_data.create_table())
 
     append_to_file(RESULTS_FILE, f"lambda = ({lambda_} +- {lambda_error}) nm")

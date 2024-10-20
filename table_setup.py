@@ -6,28 +6,54 @@ from constants import CONSTANTS
 from utils import Median
 
 
-def compute_lambda(x_mn: Unum, order: int) -> Unum:
-    return (x_mn * CONSTANTS.SLOT_C) / (CONSTANTS.D * order)
+class Slot:
+    class Measurement:
+        x: Unum
+        U_F: Unum
+
+        def __init__(self, x: Unum, U_F: Unum):
+            self.x = x
+            self.U_F = U_F
+
+    left_minimums: list[Measurement]
+    right_minimums: list[Measurement]
+    left_maximums: list[Measurement]
+    central_maximum: Measurement
+    right_maximums: list[Measurement]
+
+    def __init__(self,
+                 left_minimums: list[Measurement],
+                 right_minimums: list[Measurement],
+                 left_maximums: list[Measurement],
+                 central_maximum: Measurement,
+                 right_maximums: list[Measurement],
+                 ):
+        self.left_minimums = left_minimums
+        self.right_minimums = right_minimums
+        self.left_maximums = left_maximums
+        self.central_maximum = central_maximum
+        self.right_maximums = right_maximums
+
+
+def compute_lambda(x_mn: Unum, order: int, slot_size: Unum) -> Unum:
+    return (x_mn * slot_size) / (CONSTANTS.D * order)
 
 
 class MinimumIntensityData:
-    left_of_central_minimum_3: Unum # List of 3 measurements
-    left_of_central_minimum_2: Unum  # List of 3 measurements
-    left_of_central_minimum_1: Unum  # List of 3 measurements
-    right_of_central_minimum_1: Unum  # List of 3 measurements
-    right_of_central_minimum_2: Unum  # List of 3 measurements
-    right_of_central_minimum_3: Unum  # List of 3 measurements
+    left_of_central_minimum_3: Unum
+    left_of_central_minimum_2: Unum
+    left_of_central_minimum_1: Unum
+    right_of_central_minimum_1: Unum
+    right_of_central_minimum_2: Unum
+    right_of_central_minimum_3: Unum
 
-    def __init__(self,
-                 left: [Unum],
-                 right: [Unum],
-                 ):
-        self.left_of_central_minimum_3 = left[0]
-        self.left_of_central_minimum_2 = left[1]
-        self.left_of_central_minimum_1 = left[2]
-        self.right_of_central_minimum_1 = right[0]
-        self.right_of_central_minimum_2 = right[1]
-        self.right_of_central_minimum_3 = right[2]
+    def __init__(self, slot: Slot):
+        self.left_of_central_minimum_3 = slot.left_minimums[0].x
+        self.left_of_central_minimum_2 = slot.left_minimums[1].x
+        self.left_of_central_minimum_1 = slot.left_minimums[2].x
+        self.right_of_central_minimum_1 = slot.right_minimums[0].x
+        self.right_of_central_minimum_2 = slot.right_minimums[1].x
+        self.right_of_central_minimum_3 = slot.right_minimums[2].x
 
     def create_table(self) -> PrettyTable:
         table: PrettyTable = PrettyTable()
@@ -37,7 +63,7 @@ class MinimumIntensityData:
             [
                 "Pozitie fata de MC",
                 "Ordin minim",
-                "Pozitie X Rigla"
+                "Pozitie X Rigla (mm)"
             ]
         )
 
@@ -107,34 +133,38 @@ class MinimumIntensityComputedData:
         def __init__(self,
                      order_id: int,
                      x_mn: Unum,
+                     slot_size: Unum
                      ):
             self.order_id = order_id
             self.x_mn = x_mn
-            self.lambda_ = compute_lambda(x_mn, order_id).asUnit(nm)
+            self.lambda_ = compute_lambda(x_mn, order_id, slot_size).asUnit(nm)
 
     order_1: Order
     order_2: Order
     order_3: Order
 
     def compute_xmn(self, x_left: Unum, x_right: Unum) -> Unum:
-        return abs((x_left + x_right) / 2)
+        return abs((x_left - x_right) / 2)
 
-    def __init__(self, data: MinimumIntensityData):
+    def __init__(self, data: MinimumIntensityData, slot_size: Unum):
         self.order_1 = MinimumIntensityComputedData.Order(
             1,
             x_mn=self.compute_xmn(data.left_of_central_minimum_1, data.right_of_central_minimum_1),
+            slot_size=slot_size
         )
         self.order_2 = MinimumIntensityComputedData.Order(
             2,
             x_mn=self.compute_xmn(data.left_of_central_minimum_2, data.right_of_central_minimum_2),
+            slot_size=slot_size
         )
         self.order_3 = MinimumIntensityComputedData.Order(
             3,
             x_mn=self.compute_xmn(data.left_of_central_minimum_3, data.right_of_central_minimum_3),
+            slot_size=slot_size
         )
 
     def get_median(self) -> Median:
-        return Median(self.order_1.lambda_ + self.order_2.lambda_ + self.order_3.lambda_)
+        return Median([self.order_1.lambda_ , self.order_2.lambda_ , self.order_3.lambda_])
 
     def create_table(self) -> PrettyTable:
         table: PrettyTable = PrettyTable()
@@ -142,77 +172,41 @@ class MinimumIntensityComputedData:
         table.add_column(
             "C0",
             [
-                None,
                 "Ordin minim",
                 "X_mn",
                 "Lambda",
             ]
         )
 
-        for measurement in range(3):
-            table.add_column(
-                "C" + str(measurement * 3 + 1),
-                [
-                    "Masuratoarea " + str(measurement + 1),
-                    "1",
-                    self.order_1.x_mn[measurement],
-                    self.order_1.lambda_[measurement],
-                ]
-            )
-            table.add_column(
-                "C" + str(measurement * 3 + 2),
-                [
-                    "Masuratoarea " + str(measurement + 1),
-                    "2",
-                    self.order_2.x_mn[measurement],
-                    self.order_2.lambda_[measurement],
-                ]
-            )
-            table.add_column(
-                "C" + str(measurement * 3 + 3),
-                [
-                    "Masuratoarea " + str(measurement + 1),
-                    "3",
-                    self.order_3.x_mn[measurement],
-                    self.order_3.lambda_[measurement],
-                ]
-            )
+        table.add_column(
+            "C1",
+            [
+                "1",
+                self.order_1.x_mn,
+                self.order_1.lambda_,
+            ]
+        )
+        table.add_column(
+            "C2" ,
+            [
+                "2",
+                self.order_2.x_mn,
+                self.order_2.lambda_,
+            ]
+        )
+        table.add_column(
+            "C3",
+            [
+                "3",
+                self.order_3.x_mn,
+                self.order_3.lambda_,
+            ]
+        )
 
         return table
 
 
 class MaximumIntensityData:
-    class Slot:
-        class Measurement:
-            maximum_x: Unum
-            U_F: Unum
-
-            def __init__(self, x: Unum, U_F: Unum):
-                self.maximum_x = x
-                self.U_F = U_F
-
-        left_of_central_maximum_3: Measurement
-        left_of_central_maximum_2: Measurement
-        left_of_central_maximum_1: Measurement
-        central_maximum: Measurement
-        right_of_central_maximum_1: Measurement
-        right_of_central_maximum_2: Measurement
-        right_of_central_maximum_3: Measurement
-
-        def __init__(self,
-                     left: list[Measurement],
-                     center: Measurement,
-                     right: list[Measurement],
-                     ):
-            self.left_of_central_maximum_3 = left[0]
-            self.left_of_central_maximum_2 =  left[1]
-            self.left_of_central_maximum_1 =  left[2]
-            self.central_maximum = center
-            self.right_of_central_maximum_1 = right[0]
-            self.right_of_central_maximum_2 = right[1]
-            self.right_of_central_maximum_3 = right[2]
-
-
     slot_A: Slot
     slot_B: Slot
     slot_C: Slot
@@ -236,8 +230,7 @@ class MaximumIntensityData:
                 "Ordin maxim",
                 "Fanta A", None,
                 "Fanta B", None,
-                "Fanta C", None,
-            ]
+            ] + (["Fanta C", None, ] if self.slot_C is not None else [])
         )
 
         table.add_column(
@@ -249,9 +242,7 @@ class MaximumIntensityData:
                 "U_F (mv)",
                 "X maxim",
                 "U_F (mv)",
-                "X maxim",
-                "U_F (mv)",
-            ]
+            ] + (["X maxim", "U_F (mv)"] if self.slot_C is not None else [])
         )
 
         table.add_column(
@@ -259,91 +250,78 @@ class MaximumIntensityData:
             [
                 "Stanga MC",
                 "3",
-                self.slot_A.left_of_central_maximum_3.maximum_x,
-                self.slot_A.left_of_central_maximum_3.U_F,
-                self.slot_B.left_of_central_maximum_3.maximum_x,
-                self.slot_B.left_of_central_maximum_3.U_F,
-                self.slot_C.left_of_central_maximum_3.maximum_x,
-                self.slot_C.left_of_central_maximum_3.U_F,
-            ]
+                self.slot_A.left_maximums[2].x,
+                self.slot_A.left_maximums[2].U_F,
+                self.slot_B.left_maximums[2].x,
+                self.slot_B.left_maximums[2].U_F,
+
+            ] + ([self.slot_C.left_maximums[2].x, self.slot_C.left_maximums[2].U_F] if self.slot_C is not None else [])
         )
         table.add_column(
             "C3",
             [
                 "Stanga MC",
                 "2",
-                self.slot_A.left_of_central_maximum_2.maximum_x,
-                self.slot_A.left_of_central_maximum_2.U_F,
-                self.slot_B.left_of_central_maximum_2.maximum_x,
-                self.slot_B.left_of_central_maximum_2.U_F,
-                self.slot_C.left_of_central_maximum_2.maximum_x,
-                self.slot_C.left_of_central_maximum_2.U_F,
-            ]
+                self.slot_A.left_maximums[1].x,
+                self.slot_A.left_maximums[1].U_F,
+                self.slot_B.left_maximums[1].x,
+                self.slot_B.left_maximums[1].U_F,
+            ] + ([self.slot_C.left_maximums[1].x, self.slot_C.left_maximums[1].U_F] if self.slot_C is not None else [])
         )
         table.add_column(
             "C4",
             [
                 "Stanga MC",
                 "1",
-                self.slot_A.left_of_central_maximum_1.maximum_x,
-                self.slot_A.left_of_central_maximum_1.U_F,
-                self.slot_B.left_of_central_maximum_1.maximum_x,
-                self.slot_B.left_of_central_maximum_1.U_F,
-                self.slot_C.left_of_central_maximum_1.maximum_x,
-                self.slot_C.left_of_central_maximum_1.U_F,
-            ]
+                self.slot_A.left_maximums[0].x,
+                self.slot_A.left_maximums[0].U_F,
+                self.slot_B.left_maximums[0].x,
+                self.slot_B.left_maximums[0].U_F,
+            ] +( [self.slot_C.left_maximums[0].x, self.slot_C.left_maximums[0].U_F] if self.slot_C is not None else [])
         )
         table.add_column(
             "C5",
             [
                 "MC",
                 None,
-                self.slot_A.central_maximum.maximum_x,
+                self.slot_A.central_maximum.x,
                 self.slot_A.central_maximum.U_F,
-                self.slot_B.central_maximum.maximum_x,
+                self.slot_B.central_maximum.x,
                 self.slot_B.central_maximum.U_F,
-                self.slot_C.central_maximum.maximum_x,
-                self.slot_C.central_maximum.U_F,
-            ]
+            ] + ([self.slot_C.central_maximum.x, self.slot_C.central_maximum.U_F] if self.slot_C is not None else [])
         )
         table.add_column(
             "C6",
             [
                 "Dreapta MC",
                 "1",
-                self.slot_A.right_of_central_maximum_1.maximum_x,
-                self.slot_A.right_of_central_maximum_1.U_F,
-                self.slot_B.right_of_central_maximum_1.maximum_x,
-                self.slot_B.right_of_central_maximum_1.U_F,
-                self.slot_C.right_of_central_maximum_1.maximum_x,
-                self.slot_C.right_of_central_maximum_1.U_F,
-            ]
+                self.slot_A.right_maximums[0].x,
+                self.slot_A.right_maximums[0].U_F,
+                self.slot_B.right_maximums[0].x,
+                self.slot_B.right_maximums[0].U_F,
+            ] + ([self.slot_C.right_maximums[0].x, self.slot_C.right_maximums[0].U_F] if self.slot_C is not None else [])
         )
         table.add_column(
             "C7",
             [
                 "Dreapta MC",
                 "2",
-                self.slot_A.right_of_central_maximum_2.maximum_x,
-                self.slot_A.right_of_central_maximum_2.U_F,
-                self.slot_B.right_of_central_maximum_2.maximum_x,
-                self.slot_B.right_of_central_maximum_2.U_F,
-                self.slot_C.right_of_central_maximum_2.maximum_x,
-                self.slot_C.right_of_central_maximum_2.U_F,
-            ]
+                self.slot_A.right_maximums[1].x,
+                self.slot_A.right_maximums[1].U_F,
+                self.slot_B.right_maximums[1].x,
+                self.slot_B.right_maximums[1].U_F,
+            ] + ([self.slot_C.right_maximums[1].x, self.slot_C.right_maximums[1].U_F] if self.slot_C is not None else [])
         )
         table.add_column(
             "C8",
             [
                 "Dreapta MC",
                 "3",
-                self.slot_A.right_of_central_maximum_3.maximum_x,
-                self.slot_A.right_of_central_maximum_3.U_F,
-                self.slot_B.right_of_central_maximum_3.maximum_x,
-                self.slot_B.right_of_central_maximum_3.U_F,
-                self.slot_C.right_of_central_maximum_3.maximum_x,
-                self.slot_C.right_of_central_maximum_3.U_F,
-            ]
+                self.slot_A.right_maximums[2].x,
+                self.slot_A.right_maximums[2].U_F,
+                self.slot_B.right_maximums[2].x,
+                self.slot_B.right_maximums[2].U_F,
+            ] +( [self.slot_C.right_maximums[2].x, self.slot_C.right_maximums[2].U_F] if self.slot_C is not None else [])
         )
 
         return table
@@ -381,29 +359,29 @@ class MaximumIntensityComputedData:
         order_3: Order
 
         def __init__(self,
-                     slot_left: list[MaximumIntensityData.Slot.Measurement],
-                     slot_right: list[MaximumIntensityData.Slot.Measurement],
+                     slot_left: list[Slot.Measurement],
+                     slot_right: list[Slot.Measurement],
                      lambda_: Unum,
                      slot_size: Unum,
                      ):
             self.order_1 = MaximumIntensityComputedData.Slot.Order(
                 order_id=1,
-                X_left=slot_left[0].maximum_x,
-                X_right=slot_right[0].maximum_x,
+                X_left=slot_left[0].x,
+                X_right=slot_right[0].x,
                 lambda_=lambda_,
                 slot_size=slot_size,
             )
             self.order_2 = MaximumIntensityComputedData.Slot.Order(
                 order_id=2,
-                X_left=slot_left[1].maximum_x,
-                X_right=slot_right[1].maximum_x,
+                X_left=slot_left[1].x,
+                X_right=slot_right[1].x,
                 lambda_=lambda_,
                 slot_size=slot_size,
             )
             self.order_3 = MaximumIntensityComputedData.Slot.Order(
                 order_id=3,
-                X_left=slot_left[2].maximum_x,
-                X_right=slot_right[2].maximum_x,
+                X_left=slot_left[2].x,
+                X_right=slot_right[2].x,
                 lambda_=lambda_,
                 slot_size=slot_size,
             )
@@ -417,47 +395,24 @@ class MaximumIntensityComputedData:
                  lambda_: Unum
                  ):
         self.slot_A = MaximumIntensityComputedData.Slot(
-            slot_left=[
-                data.slot_A.left_of_central_maximum_1,
-                data.slot_A.left_of_central_maximum_2,
-                data.slot_A.left_of_central_maximum_3,
-            ],
-            slot_right=[
-                data.slot_A.right_of_central_maximum_1,
-                data.slot_A.right_of_central_maximum_2,
-                data.slot_A.right_of_central_maximum_3,
-            ],
+            slot_left=data.slot_A.left_maximums,
+            slot_right=data.slot_A.right_maximums,
             lambda_=lambda_,
             slot_size=CONSTANTS.SLOT_A
         )
         self.slot_B = MaximumIntensityComputedData.Slot(
-            slot_left=[
-                data.slot_B.left_of_central_maximum_1,
-                data.slot_B.left_of_central_maximum_2,
-                data.slot_B.left_of_central_maximum_3,
-            ],
-            slot_right=[
-                data.slot_B.right_of_central_maximum_1,
-                data.slot_B.right_of_central_maximum_2,
-                data.slot_B.right_of_central_maximum_3,
-            ],
+            slot_left=data.slot_B.left_maximums,
+            slot_right=data.slot_B.right_maximums,
             lambda_=lambda_,
             slot_size=CONSTANTS.SLOT_B
         )
-        self.slot_C = MaximumIntensityComputedData.Slot(
-            slot_left=[
-                data.slot_C.left_of_central_maximum_1,
-                data.slot_C.left_of_central_maximum_2,
-                data.slot_C.left_of_central_maximum_3,
-            ],
-            slot_right=[
-                data.slot_C.right_of_central_maximum_1,
-                data.slot_C.right_of_central_maximum_2,
-                data.slot_C.right_of_central_maximum_3,
-            ],
-            lambda_=lambda_,
-            slot_size=CONSTANTS.SLOT_C
-        )
+        if data.slot_C is not None:
+            self.slot_C = MaximumIntensityComputedData.Slot(
+                slot_left=data.slot_C.left_maximums,
+                slot_right=data.slot_C.right_maximums,
+                lambda_=lambda_,
+                slot_size=CONSTANTS.SLOT_C
+            )
 
     def create_table(self) -> PrettyTable:
         table = PrettyTable()
@@ -475,7 +430,7 @@ class MaximumIntensityComputedData:
             ]
         )
 
-        for slot in [self.slot_A, self.slot_B, self.slot_C]:
+        for slot in [self.slot_A, self.slot_B ] + ([self.slot_C] if hasattr(self, "slot_C") else []):
             table.add_column(
                 "C1",
                 [

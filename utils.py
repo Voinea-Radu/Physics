@@ -40,7 +40,6 @@ def unit_sum(data: list[Unum]) -> Unum:
 
 
 def write_to_csv(file_name: str, table: PrettyTable):
-    print(table)
     for row in table._rows:
         for i in range(len(row)):
             if isinstance(row[i], Unum):
@@ -49,6 +48,7 @@ def write_to_csv(file_name: str, table: PrettyTable):
                 row[i] = f"{row[i]:.2f}"
 
     data = table.get_csv_string()
+    print(table)
 
     with open(file_name, "w", encoding="utf-8") as file:
         for line in data.split("\n"):
