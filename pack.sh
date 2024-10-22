@@ -1,2 +1,2 @@
-python3 main.py
-zip lab2.zip *.py results.txt *.csv *.png
+bash run.sh
+zip lab2.zip *.py results.txt *.csv *.png src/*.py *.docx -r

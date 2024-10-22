@@ -2,9 +2,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from prettytable import PrettyTable
 from unum import Unum
-from unum.units import *
+from unum.units import V, Hz
 
-from constants import CONSTANTS, Constants
+from constants import CONSTANTS
 from utils import Median
 
 
@@ -56,21 +56,35 @@ class Data:
 
         table.add_column(
             "v * 10^12 median (V)",
-            [(wave_length.v/10**12).asUnit(Hz) for wave_length in self.wave_lengths]
+            [(wave_length.v / 10 ** 12).asUnit(Hz) for wave_length in self.wave_lengths]
         )
 
         return table
 
-    def plot(self, file_name:str):
-        x = [(wave_length.v.asUnit(Hz).asNumber())/10**12 for wave_length in self.wave_lengths]
+    def plot(self, file_name: str) -> (float, Unum):
+        x = [(wave_length.v.asUnit(Hz).asNumber()) / 10 ** 12 for wave_length in self.wave_lengths]
         y = [wave_length.U_0_median.asUnit(V).asNumber() for wave_length in self.wave_lengths]
 
+        real_slope, _ = np.polyfit([(wave_length.v.asUnit(Hz).asNumber()) for wave_length in self.wave_lengths], y, 1)
         slope, intercept = np.polyfit(x, y, 1)
-        pred = slope * np.array(x) + intercept
-        plt.plot(x, pred, color="red", label=f"Linear Fit: y = {slope:.2f}x + {intercept:.2f}")
+
+        x_intersect = -intercept / slope
+
+        pred = slope * np.array(x + [x_intersect]) + intercept
+        plt.plot(x + [x_intersect], pred, color="red", label=f"Linear Fit: y = {slope:.2f}x + {intercept:.2f}")
+
+        plt.axhline(0, color="black")
+        plt.scatter(x_intersect, 0, color="green", zorder=5, label=f"Intersection at x = {x_intersect:.2f}")
 
         plt.scatter(x, y)
         plt.xlabel("v * 10^12 (Hz)")
+        plt.ylabel("U_0 median (V)")
 
         plt.show()
         plt.savefig(file_name)
+
+        print(real_slope)
+
+        h = (real_slope * CONSTANTS.e).asNumber()
+
+        return (h, x_intersect * (10 ** 12) * Hz)
