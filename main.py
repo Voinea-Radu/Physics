@@ -94,6 +94,7 @@ def plot(slot: str, y) -> Slot:
     plt.title(f"Slot {slot}")
 
     plt.show()
+    plt.savefig(f"slot_{slot}.png")
 
     return Slot(
         left_minimums=left_minimums,
