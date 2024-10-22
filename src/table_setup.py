@@ -353,7 +353,7 @@ class MaximumIntensityComputedData:
                 print(epsilon_m)
 
                 from math import sin
-                self.I_ne = (sin(epsilon_m) ** 2) / (epsilon_m ** 2)  # TODO
+                self.I_ne = (sin(epsilon_m) ** 2) / (epsilon_m ** 2)
                 self.k_I = self.I_ne / CONSTANTS.get_order(order_id).I_n
 
                 self.I_ne = f"{self.I_ne.asNumber():.6f}"

@@ -35,7 +35,7 @@ class Constants:
         self.SLOT_B = 0.24 * mm
         self.SLOT_C = 0.48 * mm
 
-        self.D = 180 * cm  # TODO CHANGE THIS
+        self.D = 180 * cm
 
         self.PI = 3.141592653589793238462643383279502884197169399375105820974944
 
