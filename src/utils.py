@@ -1,7 +1,8 @@
+import os
+
 from prettytable import PrettyTable
 from unum import Unum
-import os
-from unum.units import *
+from unum.units import V
 
 kV = Unum.unit("kV", 1000 * V)  # 1 kV = 1000 V
 mV = Unum.unit("mV", 0.001 * V)  # 1 mV = 0.001 V

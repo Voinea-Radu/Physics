@@ -1,8 +1,8 @@
 from prettytable import PrettyTable
 from unum import Unum
-from unum.units import *
+from unum.units import mm, nm
 
-from constants import CONSTANTS, Constants
+from constants import CONSTANTS
 from utils import Median
 
 
@@ -353,7 +353,7 @@ class MaximumIntensityComputedData:
                 print(epsilon_m)
 
                 from math import sin
-                self.I_ne = (sin(epsilon_m) ** 2) / (epsilon_m**2)  # TODO
+                self.I_ne = (sin(epsilon_m) ** 2) / (epsilon_m ** 2)  # TODO
                 self.k_I = self.I_ne / CONSTANTS.get_order(order_id).I_n
 
                 self.I_ne = f"{self.I_ne.asNumber():.6f}"
@@ -510,13 +510,11 @@ class HeisenbergData:
         self.slot_B_left = slot_B_left
         self.slot_B_right = slot_B_right
 
-
         if slot_C_left is not None and slot_C_right is not None:
             self.slot_C_left = slot_C_left
             self.slot_C_right = slot_C_right
 
         self.compute(lambda_)
-
 
     def compute(self, lambda_: Unum):
         self.slot_A = HeisenbergData.Slot(

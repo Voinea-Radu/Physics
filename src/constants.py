@@ -1,5 +1,5 @@
 from unum import Unum
-from unum.units import *
+from unum.units import mm, cm
 
 
 class Constants:
@@ -41,17 +41,17 @@ class Constants:
 
         self.ORDER_1 = Constants.Order(
             order=1,
-            epsilon_M=4.493 * mm/mm,
+            epsilon_M=4.493 * mm / mm,
             I_n=0.0472 * mm
         )
         self.ORDER_2 = Constants.Order(
             order=2,
-            epsilon_M=7.725 *mm/mm,
+            epsilon_M=7.725 * mm / mm,
             I_n=0.0168 * mm
         )
         self.ORDER_3 = Constants.Order(
             order=3,
-            epsilon_M=10.904 * mm/mm,
+            epsilon_M=10.904 * mm / mm,
             I_n=0.00834 * mm
         )
 

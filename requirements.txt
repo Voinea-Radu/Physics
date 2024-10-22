@@ -1,3 +1,5 @@
-prettytable~=3.11.0
-Unum~=4.2.1
 matplotlib~=3.9.2
+numpy~=2.1.2
+scipy~=1.14.1
+Unum~=4.2.1
+prettytable~=3.11.0

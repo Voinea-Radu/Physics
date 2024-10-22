@@ -4,21 +4,13 @@ import builtins
 
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.ma.core import minimum
-from prettytable import PrettyTable
-from scipy.optimize import fsolve
-from unum import Unum
-from unum.units import *
-import matplotlib.pyplot as plt
-import numpy as np
-from scipy import interpolate
-import numpy as np
-import matplotlib.pyplot as plt
 from scipy.interpolate import make_interp_spline
+from unum import Unum
+from unum.units import mm, nm
 
 from constants import CONSTANTS
 from table_setup import MinimumIntensityData, MaximumIntensityData, MinimumIntensityComputedData, MaximumIntensityComputedData, HeisenbergData, Slot
-from utils import get_column, write_to_csv, delete_file, append_to_file, kV, mV, Median
+from utils import write_to_csv, delete_file, append_to_file, mV, Median
 
 RESULTS_FILE: str = "results.txt"
 MINIMUM_INTENSITY_TABLE_FILE: str = "minimum_intensity.csv"
@@ -151,9 +143,9 @@ def main():
 
     heisenberg_data = HeisenbergData(
         lambda_=lambda_,
-        slot_A_left=[-8 , -9 , -10 , -8.5 ] * mm,
-        slot_A_right=[8.5 , 10.5 , 8 , 9.5 ]*mm,
-        slot_B_left=[-4 , -3.5 , -4.5, -3]*mm,
+        slot_A_left=[-8, -9, -10, -8.5] * mm,
+        slot_A_right=[8.5, 10.5, 8, 9.5] * mm,
+        slot_B_left=[-4, -3.5, -4.5, -3] * mm,
         slot_B_right=[4.5, 4, 3.5, 4] * mm,
     )
 
@@ -162,7 +154,6 @@ def main():
     K_H_error = K_H_median.square_deviation
 
     write_to_csv(HEISENBERG_TABLE_FILE, heisenberg_data.create_table())
-
 
     append_to_file(RESULTS_FILE, f"lambda = ({lambda_.asNumber()} +- {lambda_error.asNumber()}) nm")
     append_to_file(RESULTS_FILE, f"K_H = ({K_H.asNumber()} +- {K_H_error.asNumber()})")
