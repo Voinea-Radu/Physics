@@ -6,8 +6,8 @@ from unum.units import *
 
 from utils import get_column, write_to_csv, delete_file, append_to_file, kV
 
-RESULTS_FILE: str = "../results.txt"
-TABLE_FILE: str = "../table.csv"
+RESULTS_FILE: str = "results.txt"
+TABLE_FILE: str = "table.csv"
 
 """
 Scopul lucrarii:
