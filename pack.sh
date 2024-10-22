@@ -1,2 +1,4 @@
+cd src;
 python3 main.py
-zip lab1.zip *.py results.txt table.csv *.png
+cd ..;
+zip lab1.zip src/*.py results.txt table.csv *.png *.docx -r

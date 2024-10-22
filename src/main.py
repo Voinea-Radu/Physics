@@ -6,8 +6,8 @@ from unum.units import *
 
 from utils import get_column, write_to_csv, delete_file, append_to_file, kV
 
-RESULTS_FILE: str = "results.txt"
-TABLE_FILE: str = "table.csv"
+RESULTS_FILE: str = "../results.txt"
+TABLE_FILE: str = "../table.csv"
 
 """
 Scopul lucrarii:
@@ -112,12 +112,12 @@ def main():
     d1_exp = compute_graphite_constants(D1_slope)
     d2_exp = compute_graphite_constants(D2_slope)
 
-    append_to_file(RESULTS_FILE, f"d1 exp = {d1_exp.asUnit(m)}")
-    append_to_file(RESULTS_FILE, f"d2 exp = {d2_exp.asUnit(m)}")
+    append_to_file(RESULTS_FILE, f"d1 exp = {d1_exp.asUnit(m).asNumber()*(10**10):.2f}e-10 m")
+    append_to_file(RESULTS_FILE, f"d2 exp = {d2_exp.asUnit(m).asNumber()*(10**10):.2f}e-10 m")
 
     write_to_csv(TABLE_FILE, table)
     plt.show()
-    plt.savefig("plot.png")
+    plt.savefig("../plot.png")
 
 
 if __name__ == "__main__":
