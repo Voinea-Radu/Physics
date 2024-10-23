@@ -83,8 +83,6 @@ class Data:
         plt.show()
         plt.savefig(file_name)
 
-        print(real_slope)
-
         h = (real_slope * CONSTANTS.e).asNumber()
 
         return (h, x_intersect * (10 ** 12) * Hz)
