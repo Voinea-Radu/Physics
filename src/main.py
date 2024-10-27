@@ -56,12 +56,12 @@ def main():
                          WaveLength(
                              color="ultraviolet",
                              wave_length=366 * nm,
-                             U_0=[1.262, 1.136, 1.076, 1.014, 1.08, 1.063, 1.043, 1.037, 1.089, 1] * V
+                             U_0=[1.262, 1.186, 1.176, 1.144, 1.08, 1.163, 1.093, 1.127, 1.089, 1.102] * V
                          )
                      ]
     )
-    run_with_data(all_data, "results_all.txt", "data_table_all.csv", "data_plot_all.png")
-    run_with_data(data_no_uv, "results_no_uv.txt", "data_table_no_uv.csv", "data_plot_no_uv.png")
+    run_with_data(all_data, "data_table_all.csv", "data_plot_all.png", "results_all.txt")
+    run_with_data(data_no_uv, "data_table_no_uv.csv", "data_plot_no_uv.png", "results_no_uv.txt")
 
 
 if __name__ == "__main__":
