@@ -63,6 +63,17 @@ def main():
     run_with_data(all_data, "data_table_all.csv", "data_plot_all.png", "results_all.txt")
     run_with_data(data_no_uv, "data_table_no_uv.csv", "data_plot_no_uv.png", "results_no_uv.txt")
 
+    append_to_file("general_results.txt", "Q: In ce consta efectul fotoelectric?")
+    append_to_file("general_results.txt", "A: Efectul foloeletric consta in emiterea de electroni de pe suprafata unui material atunci cand acesta este expus la lumina de o anumita frecventa sau lungime de unda. In acest fenomen, fotonii cu energie sugicienta sunt absorbiti de electronii de pe suprafata materialului, iar acesta sunt eliberati daca energia fotonului este mai mare decat energia necesara pentru a depasii forta de atractie dintre electron si material")
+    append_to_file("general_results.txt", "Q: Scrieti ecuatia de conservare a energiei in procesul de ciocnire foron-electron.")
+    append_to_file("general_results.txt", "A: E_foton = E_forta + E_cinetica. E_forta este energia minima necesara pentru a elibera electronul de pe suprafata materialului, iar E_cinetica este energia cinetica a electronului eliberat.")
+    append_to_file("general_results.txt", "Q: Ce se intelege prin frecventa de prag?")
+    append_to_file("general_results.txt", "A: Frecventa de prag este frecventa minima a radiatiei incidenta necesara pentru a produce efectul fotoelectric.")
+    append_to_file("general_results.txt", "Q: Ce este constanta lui Planck? Stabiliti unitatea de masura a acesteia.")
+    append_to_file("general_results.txt", "A: Constanta lui Planck este o constanta fizica, care exprima proportionalitatea dintre energia unui foton si frecenta acestuia. Unitatea de masura estg J*s (Jouli * secunda) sau eV (electron-volt).")
+    append_to_file("general_results.txt", "Q: Enuntati posibilele surse de erori din cadrul experimentului si sugerati metode de reducere a erorilor.")
+    append_to_file("general_results.txt", "A: Reflexia si absortila partiala a luminii care poate fi solutionata prin mentirea suprafetei curate. In functie de temperatura care poate fi solutionata prin mentinerea unei temperaturi constante pe parcursul experimentului.")
+
 
 if __name__ == "__main__":
     main()
