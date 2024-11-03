@@ -2,6 +2,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from unum.units import cm, s, m
 
+from utils import append_to_file, delete_file
+
 times = [120] * 6
 distances = [3.5, 4, 4.5, 5, 5.5, 6]
 
@@ -26,12 +28,12 @@ def main():
     plt.scatter(omega_over_4pi, counts)
     plt.plot(omega_over_4pi, pred, color="red", label=f"Linear Fit: y = {slope:.2f}x + {intercept:.2f}")
     plt.show()
+    plt.savefig("results.png")
+    epsilon = slope / (220_000 * 0.85)
 
-    print(slope)
-    print(omega_over_4pi)
-
-    print("epsilon = ", slope / (220_000 * 0.85))
+    append_to_file("results.txt", f"epsilon = {epsilon*100:.2f}%")
 
 
 if __name__ == "__main__":
+    delete_file("results.txt")
     main()
