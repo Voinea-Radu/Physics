@@ -1,11 +1,6 @@
 from prettytable import PrettyTable
 from unum import Unum
 import os
-from unum.units import *
-
-kV = Unum.unit("kV", 1000 * V)  # 1 kV = 1000 V
-mV = Unum.unit("mV", 0.001 * V)  # 1 mV = 0.001 V
-
 
 def get_column(table: PrettyTable, label: str) -> list:
     column_index = table.field_names.index(label)
