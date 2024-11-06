@@ -17,6 +17,7 @@ def main():
     lambda_list = [623.4, 612.3, 579.0, 577.0, 546.1, 535.4, 435.8, 434.7, 433.9, 407.8, 404.7] * nm
     x_list = [34.5, 33.8, 29.9, 29.5, 29, 16.5, 15.1, 13, 12.5, 9.9, 9.2] * mm
     x_list = [zero-x for x in x_list]
+    x_list = x_list[::-1]
     one_over_lambda_squared_list = [1 / ((l ** 2).asUnit(um ** 2)) for l in lambda_list]
 
     # plot lambda vs x
@@ -54,6 +55,7 @@ def main():
 
     x_list = [46, 36.5, 33.5, 29.7, 21.5, 6.7] * mm
     x_list = [zero - x for x in x_list]
+    x_list = x_list[::-1]
     n_list = [3, 4, 5, 6, 7, 8]
     lines = ["H_alpha", "H_beta", "H_gamma", "H_delta", "H_epsilon", "H_infinity"]
     R_H_list = []
