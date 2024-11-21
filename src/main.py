@@ -17,19 +17,6 @@ class Specter:
         self.x = x_degree + x_minutes / 60
 
 
-class Band:
-    x_prime: int
-    x_double_prime: int
-    lambda_prime: float
-    lambda_double_prime: float
-
-    def __init__(self, x_prime: int, x_double_prime: int, lambda_prime: float, lambda_double_prime: float):
-        self.x_prime = x_prime
-        self.x_double_prime = x_double_prime
-        self.lambda_prime = lambda_prime
-        self.lambda_double_prime = lambda_double_prime
-
-
 helium_specter: list[Specter] = [
     Specter("rosu", 504.774, 115, 50),
     Specter("portocaliu", 501.567, 116, 2),
@@ -52,25 +39,34 @@ unkown_specter: list[Specter] = [
     Specter("violet", 0, 118, 30 + 22)
 ]
 
-bands: list[Band] = [
-    Band(1, 1, 1, 1)
-]
-
-
 def main():
     helium_specter_table = PrettyTable()
     unknown_specter_table = PrettyTable()
 
     helium_specter_table.field_names = ["Color Name", "Wavelength", "X"]
-    unknown_specter_table.field_names = ["Color Name", "X", "Wavelength"]
+    unknown_specter_table.field_names = ["Color Name", "Wavelength", "X"]
 
     for specter in helium_specter:
         helium_specter_table.add_row([specter.color_name, specter.wavelength, specter.x])
 
+
+    x = [specter.x for specter in helium_specter]
+    y = [1 / (specter.wavelength ** 2) for specter in helium_specter]
+
+    a, b = np.polyfit(x, y, 1)
+    plt.plot(x, y, "o")
+    plt.plot(x, [a * x_value + b for x_value in x])
+    plt.xlabel("x")
+    plt.ylabel("1/lambda^2")
+    plt.show()
+
+    for specter in unkown_specter:
+        wave_length = 1 / (a * specter.x + b)
+        wave_length = wave_length ** (1 / 2)
+        unknown_specter_table.add_row([specter.color_name, wave_length, specter.x])
+
     write_to_csv("helium_specter_table.csv", helium_specter_table)
-
-    # 1/lambda^2 = f(x) = ax + b
-
+    write_to_csv("unknown_specter_table.csv", unknown_specter_table)
 
 if __name__ == "__main__":
     delete_file("results.txt")
