@@ -8,15 +8,13 @@ import matplotlib.pyplot as plt
 
 class Specter:
     color_name: str
-    intensity: str
     wavelength: float
-    x: int
+    x: float
 
-    def __init__(self, color_name: str, intensity: str, wavelength: float, x: int):
+    def __init__(self, color_name: str, wavelength: float, x_degree: float, x_minutes: float):
         self.color_name = color_name
-        self.intensity = intensity
         self.wavelength = wavelength
-        self.x = x
+        self.x = x_degree + x_minutes / 60
 
 
 class Band:
@@ -32,111 +30,46 @@ class Band:
         self.lambda_double_prime = lambda_double_prime
 
 
-mercury_specter: list[Specter] = [
-    Specter("rosu", "intens", 623.4, 0),
-    Specter("roşu", "intens", 612.3, 0),
-    Specter("roşu", "intens", 607.3, 0),
-    Specter("portocaliu", "slab", 589.0, 0),
-    Specter("portocaliu", "foarte slab", 585.9, 0),
-    Specter("galben", "foarte intens", 579.0, 0),
-    Specter("galben", "foarte intens", 577.0, 0),
-    Specter("verde", "foarte intens", 546.1, 0),
-    Specter("verde", "slab", 538.5, 0),
-    Specter("verde", "slab", 535.4, 0),
-    Specter("albastru - verde", " foarteslab", 496.0, 0),
-    Specter("albastru - verde", "slab", 491.6, 0),
-    Specter("albastru", "foarte intens", 435.8, 0),
-    Specter("violet", "intens", 407.8, 0),
-    Specter("violet", " foarte intens", 404.7, 0)
+helium_specter: list[Specter] = [
+    Specter("rosu", 504.774, 115, 50),
+    Specter("portocaliu", 501.567, 116, 2),
+    Specter("galben", 492.193, 116, 36),
+    Specter("turcuaz", 471.314, 117, 5),
+    Specter("albsatru slab", 447.148, 117, 6),
+    Specter("albastru intens", 443.755, 118, 0),
+    Specter("violet", 438.793, 118, 25)
 ]
 
-helium_specter: list[Specter] = [
-    Specter("rosu", "intens", 623.4, 0),
-    Specter("roşu", "intens", 612.3, 0),
-    Specter("roşu", "intens", 607.3, 0),
-    Specter("portocaliu", "slab", 589.0, 0),
-    Specter("portocaliu", "foarte slab", 585.9, 0),
-    Specter("galben", "foarte intens", 579.0, 0),
-    Specter("galben", "foarte intens", 577.0, 0),
-    Specter("verde", "foarte intens", 546.1, 0),
-    Specter("verde", "slab", 538.5, 0),
-    Specter("verde", "slab", 535.4, 0),
-    Specter("albastru - verde", " foarteslab", 496.0, 0),
-    Specter("albastru - verde", "slab", 491.6, 0),
-    Specter("albastru", "foarte intens", 435.8, 0),
-    Specter("violet", "intens", 407.8, 0),
-    Specter("violet", " foarte intens", 404.7, 0)
+unkown_specter: list[Specter] = [
+    Specter("rosu slab 2", 0, 116, 12),
+    Specter("rosu intens", 0, 116, 17),
+    Specter("rosu slab 1", 0, 116, 22),
+    Specter("portocaliu", 0, 116, 30),
+    Specter("portocaliu slab", 0, 116, 30 + 6),
+    Specter("galben", 0, 116, 30 + 9),
+    Specter("turcuaz", 0, 117, 10), # - 5
+    Specter("albastru", 0, 117, 30 + 10),
+    Specter("violet", 0, 118, 30 + 22)
 ]
 
 bands: list[Band] = [
     Band(1, 1, 1, 1)
 ]
 
-# Function to calculate dispersion at specific wavelengths
-def calculate_dispersion(specter_list, target_wavelengths):
-    specter_list = sorted(specter_list, key=lambda s: s.wavelength)
-    wavelengths = [s.wavelength for s in specter_list]
-    x_values = [s.x for s in specter_list]
-
-    dispersions = {}
-    for target_lambda in target_wavelengths:
-        for i in range(len(wavelengths) - 1):
-            if wavelengths[i] <= target_lambda <= wavelengths[i + 1]:
-                # Linear interpolation to approximate dx/dλ
-                slope = (x_values[i + 1] - x_values[i]) / (wavelengths[i + 1] - wavelengths[i])
-                dispersions[target_lambda] = 1 / slope  # Inverse of slope
-                break
-    return dispersions
-
-# Function to plot specter and annotate key points
-def plot_specter_with_dispersion(specter_list, dispersions, title):
-    wavelengths = [s.wavelength for s in specter_list]
-    x_values = [s.x for s in specter_list]
-    plt.plot(x_values, wavelengths, marker='o', label="Calibration Curve")
-    for target_lambda, dispersion in dispersions.items():
-        closest_x = np.interp(target_lambda, wavelengths, x_values)
-        plt.scatter(closest_x, target_lambda, color='red', label=f"λ={target_lambda}nm, D={dispersion:.2f}")
-    plt.title(title)
-    plt.xlabel('X')
-    plt.ylabel('Wavelength (nm)')
-    plt.grid(True)
-    plt.legend()
-    plt.show()
-
 
 def main():
-    mercury_specter_table = PrettyTable()
     helium_specter_table = PrettyTable()
-    bands_table = PrettyTable()
+    unknown_specter_table = PrettyTable()
 
-    mercury_specter_table.field_names = ["Color Name", "Intensity", "Wavelength", "X"]
-    helium_specter_table.field_names = ["Color Name", "Intensity", "Wavelength", "X"]
-    bands_table.field_names = ["X' / X''", "lambda'/ lambda''"]
-
-    for specter in mercury_specter:
-        mercury_specter_table.add_row([specter.color_name, specter.intensity, specter.wavelength, specter.x])
+    helium_specter_table.field_names = ["Color Name", "Wavelength", "X"]
+    unknown_specter_table.field_names = ["Color Name", "X", "Wavelength"]
 
     for specter in helium_specter:
-        helium_specter_table.add_row([specter.color_name, specter.intensity, specter.wavelength, specter.x])
+        helium_specter_table.add_row([specter.color_name, specter.wavelength, specter.x])
 
-    for band in bands:
-        bands_table.add_row([band.x_prime / band.x_double_prime, band.lambda_prime / band.lambda_double_prime])
-
-    write_to_csv("mercury_specter_table.csv", mercury_specter_table)
     write_to_csv("helium_specter_table.csv", helium_specter_table)
-    write_to_csv("bands_table.csv", bands_table)
 
-    target_wavelengths = [420, 500, 580]
-    dispersions = calculate_dispersion(mercury_specter, target_wavelengths)
-
-    # Display dispersions in a table
-    dispersion_table = PrettyTable()
-    dispersion_table.field_names = ["Wavelength (nm)", "Dispersion (dx/dλ)"]
-    for wavelength, dispersion in dispersions.items():
-        dispersion_table.add_row([wavelength, dispersion])
-    print(dispersion_table)
-    plot_specter_with_dispersion(mercury_specter, dispersions, "Mercury Specter: Dispersion Calculation")
-
+    # 1/lambda^2 = f(x) = ax + b
 
 
 if __name__ == "__main__":
