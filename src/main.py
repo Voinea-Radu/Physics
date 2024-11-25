@@ -1,7 +1,7 @@
 import numpy as np
 from prettytable import PrettyTable
 
-from src.utils import write_to_csv
+from utils import write_to_csv
 from utils import delete_file
 import matplotlib.pyplot as plt
 
