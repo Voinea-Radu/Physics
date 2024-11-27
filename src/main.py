@@ -1,7 +1,9 @@
+from numpy.ma.core import append
 from prettytable import PrettyTable
 from unum import Unum
 from unum.units import s, min, A, T, eV
 
+from utils import append_to_file
 from utils import delete_file
 from utils import write_to_csv
 
@@ -202,12 +204,13 @@ def main():
             max_x = x
 
     plt.plot(max_x, max_p, 'ro')
-    print(f"max_x = {max_x}")
-    print(f"max_p = {max_p}")
+    append_to_file("results.txt", f"max_x = {max_x}")
+    append_to_file("results.txt", f"max_p = {max_p}")
 
     plt.xlabel('I (A)')
     plt.ylabel('N (imp)')
     plt.title('Energie in functie de curent')
+    plt.savefig("sr_90.png")
     plt.show()
 
     write_to_csv("sr_90_table.csv", sr_90_table)
