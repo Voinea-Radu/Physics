@@ -2,6 +2,12 @@ from prettytable import PrettyTable
 from unum import Unum
 import os
 
+from unum.units import T, eV
+
+imp = Unum.unit("imp")
+mT = Unum.unit("mT", T / 1000)
+keV = Unum.unit("keV", T * eV)
+
 def get_column(table: PrettyTable, label: str) -> list:
     column_index = table.field_names.index(label)
     column_data = [row[column_index] for row in table._rows]
