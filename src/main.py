@@ -56,13 +56,18 @@ data1: list[Data1] = [
 class Data:
     r: Unum
     U: Unum
-    I: int
+    I: Unum
     e_over_m: Unum
 
-    def __init__(self, r: Unum, U: Unum, I: int):
+    def __init__(self, r: Unum, U: Unum, I: Unum):
         self.r = r
         self.U = U
         self.I = I
+
+        if I.asNumber() is 0:
+            self.e_over_m = None
+            return
+
         term_1 = (125 / 32)
         term_2_1 = R ** 2
         term_2_2 = miu_0 ** 2 * n ** 2
@@ -72,9 +77,9 @@ class Data:
 
 
 data2: list[Data] = [
-    Data(5 * cm, 120 * V, 0 * A),
-    Data(5 * cm, 140 * V, 0 * A),
-    Data(5 * cm, 160 * V, 0 * A),
+    None,
+    None,
+    None,
     Data(5 * cm, 180 * V, 1.238 * A),
     Data(5 * cm, 200 * V, 1.328 * A),
     Data(5 * cm, 220 * V, 1.398 * A),
@@ -107,14 +112,14 @@ data2: list[Data] = [
 
     Data(2 * cm, 120 * V, 1.770 * A),
     Data(2 * cm, 140 * V, 2.670 * A),
-    Data(2 * cm, 160 * V, 0 * A),
-    Data(2 * cm, 180 * V, 0 * A),
-    Data(2 * cm, 200 * V, 0 * A),
-    Data(2 * cm, 220 * V, 0 * A),
-    Data(2 * cm, 240 * V, 0 * A),
-    Data(2 * cm, 260 * V, 0 * A),
-    Data(2 * cm, 280 * V, 0 * A),
-    Data(2 * cm, 300 * V, 0 * A),
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
 ]
 
 """
@@ -141,12 +146,24 @@ def main():
     table2.field_names = ["U", "I_r5", "e/m_r5", "I_r4", "e/m_r4", "I_r3", "e/m_r3", "I_r2", "e/m_r2"]
 
     for i in range(0, len(data2), 10):
-        table2.add_row([data2[i].U, data2[i].I, data2[i].e_over_m, data2[i + 1].I, data2[i + 1].e_over_m, data2[i + 2].I, data2[i + 2].e_over_m, data2[i + 3].I, data2[i + 3].e_over_m])
+        d0 = data2[i]
+        d1 = data2[i + 1]
+        d2 = data2[i + 2]
+        d3 = data2[i + 3]
 
-    e_over_m_median = Median([data.e_over_m for data in data2]).median
-    sigma_e_over_m = Median([data.e_over_m for data in data2]).square_deviation
+        table2.add_row([d0.U if d0 is not None else d1.U if d1 is not None else d2.U if d2 is not None else d3.U,
+                        None if d0 is None else d0.I, None if d0 is None else d0.e_over_m,
+                        None if d1 is None else d1.I, None if d1 is None else d1.e_over_m,
+                        None if d2 is None else d2.I, None if d2 is None else d2.e_over_m,
+                        None if d3 is None else d3.I, None if d3 is None else d3.e_over_m
+                        ])
 
-    write_to_csv("table2.csv", table2)
+    print([data.e_over_m for data in data2 if data is not None])
+    median = Median([data.e_over_m for data in data2 if data is not None])
+    e_over_m_median = median.median
+    sigma_e_over_m = median.square_deviation
+
+    write_to_csv("table2.csv", table2, 5)
     print(f"{e_over_m_median=}")
     print(f"{sigma_e_over_m=}")
 

@@ -40,13 +40,13 @@ def unit_sum(data: list[Unum]) -> Unum:
     return output
 
 
-def write_to_csv(file_name: str, table: PrettyTable):
+def write_to_csv(file_name: str, table: PrettyTable, number_of_decimals:int = 2):
     for row in table._rows:
         for i in range(len(row)):
             if isinstance(row[i], Unum):
-                row[i] = float(f"{row[i].asNumber():.2f}")
+                row[i] = float(f"{row[i].asNumber():.{number_of_decimals}f}")
             if isinstance(row[i], float):
-                row[i] = f"{row[i]:.2f}"
+                row[i] = f"{row[i]:.{number_of_decimals}f}"
 
     data = table.get_csv_string()
     print(table)
