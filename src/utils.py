@@ -44,9 +44,9 @@ def write_to_csv(file_name: str, table: PrettyTable, number_of_decimals:int = 2)
     for row in table._rows:
         for i in range(len(row)):
             if isinstance(row[i], Unum):
-                row[i] = float(f"{row[i].asNumber():.{number_of_decimals}f}")
+                row[i] = convert_to_scientific_notation(row[i].asNumber(), number_of_decimals)
             if isinstance(row[i], float):
-                row[i] = f"{row[i]:.{number_of_decimals}f}"
+                row[i] = convert_to_scientific_notation(row[i], number_of_decimals)
 
     data = table.get_csv_string()
     print(table)
@@ -66,6 +66,12 @@ def append_to_file(file_name: str, data: str):
     with open(file_name, "a", encoding="utf-8") as file:
         file.write(data)
         file.write("\n")
+
+
+def convert_to_scientific_notation(number: float, number_of_decimals: int = 2) -> str:
+    if number >= 1000 or number < 0.01:
+        return f"{number:.{number_of_decimals}e}"
+    return f"{number:.{number_of_decimals}f}"
 
 
 class Median:

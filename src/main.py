@@ -63,11 +63,6 @@ class Data:
         self.r = r
         self.U = U
         self.I = I
-
-        if I.asNumber() is 0:
-            self.e_over_m = None
-            return
-
         term_1 = (125 / 32)
         term_2_1 = R ** 2
         term_2_2 = miu_0 ** 2 * n ** 2
@@ -122,12 +117,15 @@ data2: list[Data] = [
     None,
 ]
 
-"""
-I 1.70
-U_base 25V
-r 3   3.5 4   4.5 5
-U 157 175 203 252 302
-"""
+
+def find_intermediary_point(data: list[tuple[float, float]], x: float) -> float:
+    from scipy.interpolate import interp1d
+
+    x_values, y_values = zip(*data)
+    interpolation_function = interp1d(x_values, y_values, kind='linear', fill_value='extrapolate')
+    y = interpolation_function(x)
+
+    return y
 
 
 def main():
@@ -145,28 +143,42 @@ def main():
     table2 = PrettyTable()
     table2.field_names = ["U", "I_r5", "e/m_r5", "I_r4", "e/m_r4", "I_r3", "e/m_r3", "I_r2", "e/m_r2"]
 
-    for i in range(0, len(data2), 10):
+    for i in range(0, 10):
         d0 = data2[i]
-        d1 = data2[i + 1]
-        d2 = data2[i + 2]
-        d3 = data2[i + 3]
+        d1 = data2[i + 10]
+        d2 = data2[i + 20]
+        d3 = data2[i + 30]
 
-        table2.add_row([d0.U if d0 is not None else d1.U if d1 is not None else d2.U if d2 is not None else d3.U,
-                        None if d0 is None else d0.I, None if d0 is None else d0.e_over_m,
-                        None if d1 is None else d1.I, None if d1 is None else d1.e_over_m,
-                        None if d2 is None else d2.I, None if d2 is None else d2.e_over_m,
-                        None if d3 is None else d3.I, None if d3 is None else d3.e_over_m
-                        ])
+        table2.add_row([
+            d0.U if d0 is not None else d1.U if d1 is not None else d2.U if d2 is not None else d3.U,
+            None if d0 is None else d0.I, None if d0 is None else d0.e_over_m,
+            None if d1 is None else d1.I, None if d1 is None else d1.e_over_m,
+            None if d2 is None else d2.I, None if d2 is None else d2.e_over_m,
+            None if d3 is None else d3.I, None if d3 is None else d3.e_over_m
+        ])
 
     print([data.e_over_m for data in data2 if data is not None])
     median = Median([data.e_over_m for data in data2 if data is not None])
     e_over_m_median = median.median
     sigma_e_over_m = median.square_deviation
 
-    write_to_csv("table2.csv", table2, 5)
+    write_to_csv("table2.csv", table2)
     print(f"{e_over_m_median=}")
     print(f"{sigma_e_over_m=}")
 
+    table3 = PrettyTable()
+
+
+    """
+    I 1.70
+    U_base 25V
+    r 3   3.5 4   4.5 5
+    U 157 175 203 252 302
+    """
+    table3.field_names = ["r (cm)", "3.0", "3.5", "4.0", "4.5", "5.0"]
+    table3.add_row(["U (V)", 157, 175, 203, 252, 302])
+
+    write_to_csv("table3.csv", table3)
 
 if __name__ == "__main__":
     delete_file("results.txt")
