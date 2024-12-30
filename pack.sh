@@ -1,2 +1,2 @@
 bash run.sh
-zip lab7.zip results.txt *.csv *.png src/*.py *.docx -r
+zip lab9.zip results.txt *.csv *.png src/*.py *.docx -r
